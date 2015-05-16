@@ -1,0 +1,3 @@
+advice execution("func main()") : before {
+  fmt.Println("yo joeeee!!")
+}
