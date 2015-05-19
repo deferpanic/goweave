@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 )
 
@@ -55,11 +56,21 @@ func (a *Aop) binName() string {
 // prep prepares any tmp. build dirs
 func (a *Aop) prep() {
 	fmt.Println("building" + a.tmpLocation())
-	out, err := exec.Command("mkdir", "-p", a.tmpLocation()).CombinedOutput()
+
+	fstcmd := "mkdir -p " + a.tmpLocation()
+	sndcmd := `find . -type d -exec mkdir -p "` + a.tmpLocation() + `/{}" \;`
+
+	_, err := exec.Command("bash", "-c", fstcmd).CombinedOutput()
 	if err != nil {
 		a.flog.Println(err.Error())
 	}
-	fmt.Printf("%s\n", out)
+
+	fmt.Println(sndcmd)
+	_, err = exec.Command("bash", "-c", sndcmd).CombinedOutput()
+	if err != nil {
+		a.flog.Println(err.Error())
+	}
+
 }
 
 // whichgo determines provides the full go path to the current go build
@@ -107,72 +118,97 @@ func pointCutMatch(a []Aspect, l string) Aspect {
 // transform reads line by line over each src file and inserts advice
 // where appropriate
 func (a *Aop) transform() {
-	curfile := "main.go"
 
-	file, err := os.Open(curfile)
-	if err != nil {
-		a.flog.Println(err)
-	}
-	defer file.Close()
+	fzs := a.findGoFiles()
 
-	out := ""
+	for i := 0; i < len(fzs); i++ {
+		curfile := fzs[i]
 
-	// poor man's scope
-	scope := 0
+		file, err := os.Open(curfile)
+		if err != nil {
+			a.flog.Println(err)
+		}
+		defer file.Close()
 
-	cur_aspect := Aspect{}
+		out := ""
 
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		l := scanner.Text()
+		// poor man's scope
+		scope := 0
 
-		newAspect := pointCutMatch(a.aspects, l)
-		if newAspect.pointkut.def != "" {
-			scope += 1
+		cur_aspect := Aspect{}
 
-			fmt.Println("pointcut def:\t" + newAspect.pointkut.def)
-			fmt.Println("pointcut function:\t" + newAspect.pointkut.funktion)
-			fmt.Println("before advice:\t" + newAspect.advize.before)
-			fmt.Println("after advice:\t" + newAspect.advize.after)
+		scanner := bufio.NewScanner(file)
+		for scanner.Scan() {
+			l := scanner.Text()
 
-			cur_aspect = newAspect
+			newAspect := pointCutMatch(a.aspects, l)
+			if newAspect.pointkut.def != "" {
+				scope += 1
 
-			// before advice
-			if (cur_aspect.advize.adviceTypeId == 1) ||
-				(cur_aspect.advize.adviceTypeId == 3) {
-				out += l + "\n" + cur_aspect.advize.before + "\n"
-				continue
+				fmt.Println("pointcut def:\t" + newAspect.pointkut.def)
+				fmt.Println("pointcut function:\t" + newAspect.pointkut.funktion)
+				fmt.Println("before advice:\t" + newAspect.advize.before)
+				fmt.Println("after advice:\t" + newAspect.advize.after)
+
+				cur_aspect = newAspect
+
+				// before advice
+				if (cur_aspect.advize.adviceTypeId == 1) ||
+					(cur_aspect.advize.adviceTypeId == 3) {
+					out += l + "\n" + cur_aspect.advize.before + "\n"
+					continue
+				}
+
 			}
 
+			// dat scope
+			if strings.Contains(l, "}") || strings.Contains(l, "return") {
+				scope -= 1
+
+				out += cur_aspect.advize.after + "\n"
+			}
+
+			out += l + "\n"
+
 		}
 
-		// dat scope
-		if strings.Contains(l, "}") || strings.Contains(l, "return") {
-			scope -= 1
-
-			out += cur_aspect.advize.after + "\n"
+		if err := scanner.Err(); err != nil {
+			a.flog.Println(err)
 		}
 
-		out += l + "\n"
+		f, err := os.Create(a.tmpLocation() + "/" + curfile)
+		if err != nil {
+			a.flog.Println(err)
+		}
+
+		defer f.Close()
+
+		b, err := f.WriteString(out)
+		fmt.Println(b)
+		if err != nil {
+			a.flog.Println(err)
+		}
 
 	}
+}
 
-	if err := scanner.Err(); err != nil {
-		a.flog.Println(err)
+// findGoFiles recursively finds all go files in a project
+func (a *Aop) findGoFiles() []string {
+	res := []string{}
+
+	visit := func(path string, f os.FileInfo, err error) error {
+		if strings.Contains(path, ".go") {
+			res = append(res, path)
+		}
+		return nil
 	}
 
-	f, err := os.Create(a.tmpLocation() + "/" + curfile)
+	err := filepath.Walk(".", visit)
 	if err != nil {
-		a.flog.Println(err)
+		a.flog.Println(err.Error())
 	}
 
-	defer f.Close()
-
-	b, err := f.WriteString(out)
-	fmt.Println(b)
-	if err != nil {
-		a.flog.Println(err)
-	}
+	return res
 }
 
 // findAspects finds all aspects for this project
@@ -188,21 +224,4 @@ func (a *Aop) findAspects() []string {
 	}
 
 	return aspects
-}
-
-// adviceKind returns the map id of human expression of advice type
-func adviceKind(l string) int {
-	stuff := strings.Split(l, ": ")
-	ostuff := strings.Split(stuff[1], " ")
-
-	switch ostuff[0] {
-	case "before":
-		return 1
-	case "after":
-		return 2
-	case "around":
-		return 3
-	}
-
-	return -1
 }

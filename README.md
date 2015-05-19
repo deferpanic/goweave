@@ -285,6 +285,8 @@ else.
   -- explicit return
   -- no return
 
+* convert all this exec stuff to go
+
 * better grammar for aspects
 
 * better grammar for pointcuts
