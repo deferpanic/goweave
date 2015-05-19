@@ -9,33 +9,88 @@ import (
 	"strings"
 )
 
+const (
+	version = "v0.1"
+)
+
+var (
+	// flog is a global logger
+	flog *log.Logger
+)
+
+// adviceType returns a map of id to human expression of advice types
+func adviceType() map[int]string {
+	return map[int]string{
+		1: "before",
+		2: "after",
+		3: "around",
+	}
+}
+
+// advice has a function to wrap advice around and code for said
+// function
 type advice struct {
-	funktion string
-	code     string
+	funktion     string
+	code         string
+	adviceTypeId int
 }
 
+// buildDir determines what the root build dir is
+func buildDir() string {
+	out, err := exec.Command("bash", "-c", "pwd").CombinedOutput()
+	if err != nil {
+		flog.Println(err.Error())
+	}
+
+	return strings.TrimSpace(string(out))
+}
+
+// binName returns the expected bin name
+func binName() string {
+	s := buildDir()
+	stuff := strings.Split(s, "/")
+	return stuff[len(stuff)-1]
+}
+
+// prep prepares any tmp. build dirs
 func prep() {
-	out, err := exec.Command("mkdir", "-p", "/tmp/coffee").CombinedOutput()
+	fmt.Println("building" + tmpLocation())
+	out, err := exec.Command("mkdir", "-p", tmpLocation()).CombinedOutput()
 	if err != nil {
-		log.Println("fuck" + err.Error())
+		flog.Println(err.Error())
 	}
 	fmt.Printf("%s\n", out)
 }
 
+// whichgo determines provides the full go path to the current go build
+// tool
+func whichGo() string {
+	return "/usr/local/bin/go"
+}
+
+// tmpLocation returns the tmp build dir
+func tmpLocation() string {
+	return "/tmp" + buildDir()
+}
+
+// build does the actual compilation
+// right nowe we piggy back off of 6g/8g
 func build() {
-	fmt.Println("building")
-	buildstr := "ENVZ=$PWD && cd /tmp/coffee && /usr/local/bin/go build && cp coffee $ENVZ/."
-	out, err := exec.Command("bash", "-c", buildstr).CombinedOutput()
+	buildstr := "cd " + tmpLocation() + " && " + whichGo() + " build && cp " + binName() + " " + buildDir() + "/."
+
+	fmt.Println(buildstr)
+	_, err := exec.Command("bash", "-c", buildstr).CombinedOutput()
 	if err != nil {
-		log.Println("fuck" + err.Error())
+		flog.Println(err.Error())
 	}
-	fmt.Printf("%s\n", out)
-	fmt.Println("building done")
 
 }
 
+// hasAdvice returns advice if there is advice for a given line of
+// source or returns empty advice
 func hasAdvice(a []advice, l string) advice {
 	for i := 0; i < len(a); i++ {
+		fmt.Println("checking for " + a[i].funktion)
 		if strings.Contains(l, a[i].funktion) {
 			return a[i]
 		}
@@ -44,10 +99,14 @@ func hasAdvice(a []advice, l string) advice {
 	return advice{}
 }
 
+// transform reads line by line over each src file and inserts advice
+// where appropriate
 func transform(a []advice) {
-	file, err := os.Open("main.go")
+	curfile := "main.go"
+
+	file, err := os.Open(curfile)
 	if err != nil {
-		log.Println(err)
+		flog.Println(err)
 	}
 	defer file.Close()
 
@@ -59,6 +118,7 @@ func transform(a []advice) {
 
 		avize := hasAdvice(a, l)
 		if avize.funktion != "" {
+			fmt.Println("found advice:\t" + avize.funktion)
 			out += l + "\n" + avize.code + "\n"
 		} else {
 			out += l + "\n"
@@ -67,12 +127,14 @@ func transform(a []advice) {
 	}
 
 	if err := scanner.Err(); err != nil {
-		log.Println(err)
+		flog.Println(err)
 	}
 
-	f, err := os.Create("/tmp/coffee/main.go")
+	fmt.Println("writing out" + tmpLocation() + "/" + curfile)
+
+	f, err := os.Create(tmpLocation() + "/" + curfile)
 	if err != nil {
-		log.Println(err)
+		flog.Println(err)
 	}
 
 	defer f.Close()
@@ -80,14 +142,22 @@ func transform(a []advice) {
 	b, err := f.WriteString(out)
 	fmt.Println(b)
 	if err != nil {
-		log.Println(err)
+		flog.Println(err)
 	}
 }
 
+// grab_aspects looks for an aspect file for each file
+// this seems lame and contrary to what we want...
+// I'd go as far as to say that we want this to be cross-pkg w/in root?
+//
+// maybe the rule should be - aspects are valid for anything in a
+// project root?
 func grab_aspects() []advice {
-	file, err := os.Open("main.goa")
+	aspectsFile := "main.goa"
+
+	file, err := os.Open(aspectsFile)
 	if err != nil {
-		log.Println(err)
+		flog.Println(err)
 	}
 	defer file.Close()
 
@@ -106,33 +176,35 @@ func grab_aspects() []advice {
 
 			a := advice{}
 			a.funktion = shiz
+			flog.Println("function:" + a.funktion)
+
 			cur_advice = a
 		} else if strings.Contains(l, "}") {
 			results = append(results, cur_advice)
 		} else {
-			cur_advice.code += l
+			cur_advice.code += l + "\n"
 		}
 
 		fmt.Println(scanner.Text())
 	}
 
 	if err := scanner.Err(); err != nil {
-		log.Println(err)
+		flog.Println(err)
 	}
 
+	fmt.Println(len(results))
 	return results
 }
 
+// main is the main point of entry for running goa
 func main() {
-	fmt.Println("goa v0.1")
+	flog = log.New(os.Stdout, "", log.Ldate|log.Ltime|log.Lshortfile)
 
-	if len(os.Args) > 1 {
-		prep()
-		advice := grab_aspects()
-		transform(advice)
-		build()
+	fmt.Println("goa " + version)
 
-	} else {
-		fmt.Println("invalid")
-	}
+	prep()
+	advice := grab_aspects()
+	transform(advice)
+	build()
+
 }

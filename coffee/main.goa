@@ -1,3 +1,17 @@
 advice execution("func main()") : before {
-  fmt.Println("yo joeeee!!")
+  fmt.Println("before main")
+}
+
+advice execution("func beforeBob()"): before {
+  fmt.Println("before")
+}
+
+advice execution("func afterSally()"): after {
+  fmt.Println("after")
+}
+
+advice execution("func aroundTom()"): around {
+  fmt.Println("before")
+  goaProceed()
+  fmt.Println("after")
 }
