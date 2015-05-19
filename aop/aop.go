@@ -107,7 +107,8 @@ func (a *Aop) build() {
 // line or returns an empty aspect
 func pointCutMatch(a []Aspect, l string) Aspect {
 	for i := 0; i < len(a); i++ {
-		if strings.Contains(l, a[i].pointkut.def) {
+		// look for functions
+		if strings.Contains(l, "func "+a[i].pointkut.def) {
 			return a[i]
 		}
 	}
@@ -153,8 +154,7 @@ func (a *Aop) transform() {
 				cur_aspect = newAspect
 
 				// before advice
-				if (cur_aspect.advize.adviceTypeId == 1) ||
-					(cur_aspect.advize.adviceTypeId == 3) {
+				if cur_aspect.advize.before != "" {
 					out += l + "\n" + cur_aspect.advize.before + "\n"
 					continue
 				}
@@ -163,6 +163,7 @@ func (a *Aop) transform() {
 
 			// dat scope
 			if strings.Contains(l, "}") || strings.Contains(l, "return") {
+
 				scope -= 1
 
 				out += cur_aspect.advize.after + "\n"

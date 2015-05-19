@@ -4,13 +4,21 @@
 ### TOC
 
   [Usage]()
+
   [Examples]()
+
   [What is AOP]()
+
   [Why]()
+
   [FAQ]()
+
   [Goals]()
+
   [Help]()
-  [Todo]()
+
+  [Todo](https://github.com/deferpanic/goa#todo)
+
   [Roadmap]()
 
 ### Usage:
@@ -270,6 +278,8 @@ else.
 
 ### TODO
 
+* inner vs. outer cutpoints
+
 * better error handling
   - can do bail outs if parser doesn't emit correctly
 
@@ -280,6 +290,7 @@ else.
   - with return arguments
 
 * scope - lol
+  - this is currently completely stupid and we have 0% support for
 
 * return statements
   -- explicit return
