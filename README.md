@@ -243,14 +243,16 @@ runtime.
 have to re-code it for every project. I think this is where AOP really
 shines.
 
-* Did DeferPanic Just Jump the Shark?
+* Are you all insane? This is go heresey!!
   :) No, we are practioners of the "get-shit-done" philosophy. Ergo, we
 don't care about philosophy of programming, nor do we care about other
-armchair constraints. We only care about - how fast can I get this done?
+armchair concerns. We only care about - how fast can I get this done?
 
   Our use cases usually entail us having to jump into brand new large
 codebases and we want to send 'tracer bullets' out very very fast. This
-practice allows us to do that.
+style of programming allows us to do that.
+
+  Lastly, you don't have to use this if you don't like it. To each their own.
 
 ### What You Should Know Before Using
 
