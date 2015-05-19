@@ -76,7 +76,8 @@ func tmpLocation() string {
 // build does the actual compilation
 // right nowe we piggy back off of 6g/8g
 func build() {
-	buildstr := "cd " + tmpLocation() + " && " + whichGo() + " build && cp " + binName() + " " + buildDir() + "/."
+	buildstr := "cd " + tmpLocation() + " && " + whichGo() + " build && cp " +
+		binName() + " " + buildDir() + "/."
 
 	fmt.Println(buildstr)
 	_, err := exec.Command("bash", "-c", buildstr).CombinedOutput()
@@ -90,7 +91,6 @@ func build() {
 // source or returns empty advice
 func hasAdvice(a []advice, l string) advice {
 	for i := 0; i < len(a); i++ {
-		fmt.Println("checking for " + a[i].funktion)
 		if strings.Contains(l, a[i].funktion) {
 			return a[i]
 		}
@@ -112,15 +112,33 @@ func transform(a []advice) {
 
 	out := ""
 
+	// poor man's scope
+	scope := 0
+
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		l := scanner.Text()
 
 		avize := hasAdvice(a, l)
 		if avize.funktion != "" {
+			scope += 1
+
 			fmt.Println("found advice:\t" + avize.funktion)
-			out += l + "\n" + avize.code + "\n"
+
+			// insert before
+			if avize.adviceTypeId == 1 {
+				out += l + "\n" + avize.code + "\n"
+			} else {
+				out += l + "\n"
+			}
+
 		} else {
+
+			// dat scope
+			if strings.Contains(l, "}") {
+				scope -= 1
+			}
+
 			out += l + "\n"
 		}
 
@@ -178,6 +196,10 @@ func grab_aspects() []advice {
 			a.funktion = shiz
 			flog.Println("function:" + a.funktion)
 
+			a.adviceTypeId = set_advice_type(l)
+
+			flog.Println(a.adviceTypeId)
+
 			cur_advice = a
 		} else if strings.Contains(l, "}") {
 			results = append(results, cur_advice)
@@ -194,6 +216,22 @@ func grab_aspects() []advice {
 
 	fmt.Println(len(results))
 	return results
+}
+
+func set_advice_type(l string) int {
+	stuff := strings.Split(l, ": ")
+	ostuff := strings.Split(stuff[1], " ")
+
+	switch ostuff[0] {
+	case "before":
+		return 1
+	case "after":
+		return 2
+	case "around":
+		return 3
+	}
+
+	return -1
 }
 
 // main is the main point of entry for running goa
