@@ -12,8 +12,8 @@ import (
 
 // Aop is struct runner for aop transforms
 type Aop struct {
-	flog   *log.Logger
-	advice []advice
+	flog    *log.Logger
+	aspects []Aspect
 }
 
 // NewAop instantiates and returns a new aop
@@ -30,7 +30,7 @@ func NewAop() *Aop {
 // Run preps, grabs advice, transforms the src, and builds the code
 func (a *Aop) Run() {
 	a.prep()
-	a.setAdvice()
+	a.loadAspects()
 	a.transform()
 	a.build()
 }
@@ -101,16 +101,16 @@ func (a *Aop) build() {
 
 }
 
-// hasAdvice returns advice if there is advice for a given line of
-// source or returns empty advice
-func hasAdvice(a []advice, l string) advice {
+// pointCutMatch returns an aspect if there is a pointcut match on this
+// line or returns an empty aspect
+func pointCutMatch(a []Aspect, l string) Aspect {
 	for i := 0; i < len(a); i++ {
-		if strings.Contains(l, a[i].funktion) {
+		if strings.Contains(l, a[i].pointkut.def) {
 			return a[i]
 		}
 	}
 
-	return advice{}
+	return Aspect{}
 }
 
 // transform reads line by line over each src file and inserts advice
@@ -129,26 +129,27 @@ func (a *Aop) transform() {
 	// poor man's scope
 	scope := 0
 
-	cur_advice := advice{}
+	cur_aspect := Aspect{}
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		l := scanner.Text()
 
-		newAdvice := hasAdvice(a.advice, l)
-		if newAdvice.funktion != "" {
+		newAspect := pointCutMatch(a.aspects, l)
+		if newAspect.pointkut.def != "" {
 			scope += 1
 
-			fmt.Println("found advice:\t" + newAdvice.funktion)
-			fmt.Println("before advice:\t" + newAdvice.before)
-			fmt.Println("after advice:\t" + newAdvice.after)
+			fmt.Println("pointcut def:\t" + newAspect.pointkut.def)
+			fmt.Println("pointcut function:\t" + newAspect.pointkut.funktion)
+			fmt.Println("before advice:\t" + newAspect.advize.before)
+			fmt.Println("after advice:\t" + newAspect.advize.after)
 
-			cur_advice = newAdvice
+			cur_aspect = newAspect
 
 			// before advice
-			if (cur_advice.adviceTypeId == 1) ||
-				(cur_advice.adviceTypeId == 3) {
-				out += l + "\n" + cur_advice.before + "\n"
+			if (cur_aspect.advize.adviceTypeId == 1) ||
+				(cur_aspect.advize.adviceTypeId == 3) {
+				out += l + "\n" + cur_aspect.advize.before + "\n"
 				continue
 			}
 
@@ -158,10 +159,7 @@ func (a *Aop) transform() {
 		if strings.Contains(l, "}") || strings.Contains(l, "return") {
 			scope -= 1
 
-			fmt.Println("inserting after advice")
-			fmt.Println(cur_advice.after)
-
-			out += cur_advice.after + "\n"
+			out += cur_aspect.advize.after + "\n"
 		}
 
 		out += l + "\n"
@@ -171,8 +169,6 @@ func (a *Aop) transform() {
 	if err := scanner.Err(); err != nil {
 		a.flog.Println(err)
 	}
-
-	fmt.Println("writing out" + a.tmpLocation() + "/" + curfile)
 
 	f, err := os.Create(a.tmpLocation() + "/" + curfile)
 	if err != nil {
@@ -201,74 +197,6 @@ func (a *Aop) findAspects() []string {
 	}
 
 	return aspects
-}
-
-// grab_aspects looks for an aspect file for each file
-// this seems lame and contrary to what we want...
-// I'd go as far as to say that we want this to be cross-pkg w/in root?
-//
-// maybe the rule should be - aspects are valid for anything in a
-// project root?
-func (a *Aop) setAdvice() {
-	results := []advice{}
-
-	fz := a.findAspects()
-	for i := 0; i < len(fz); i++ {
-
-		file, err := os.Open(fz[i])
-		if err != nil {
-			a.flog.Println(err)
-		}
-		defer file.Close()
-
-		cur_advice := advice{}
-
-		donebegin := false
-		scanner := bufio.NewScanner(file)
-		for scanner.Scan() {
-			l := scanner.Text()
-
-			if strings.Contains(l, "advice") {
-				blah := strings.Split(l, "execution(\"")[1]
-				shiz := strings.Split(blah, "\"")[0]
-
-				avize := advice{}
-				avize.funktion = shiz
-
-				avize.adviceTypeId = adviceKind(l)
-
-				cur_advice = avize
-			} else if strings.Contains(l, "}") {
-				results = append(results, cur_advice)
-			} else if strings.Contains(l, "goaProceed()") {
-				donebegin = true
-				continue
-			} else {
-
-				// before
-				if cur_advice.adviceTypeId == 1 {
-					cur_advice.before += l + "\n"
-				} else if cur_advice.adviceTypeId == 2 {
-					cur_advice.after += l + "\n"
-				} else {
-					if donebegin {
-						cur_advice.after += l + "\n"
-					} else {
-						cur_advice.before += l + "\n"
-					}
-				}
-
-			}
-
-		}
-
-		if err := scanner.Err(); err != nil {
-			a.flog.Println(err)
-		}
-
-	}
-
-	a.advice = results
 }
 
 // adviceKind returns the map id of human expression of advice type

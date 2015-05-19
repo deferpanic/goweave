@@ -1,10 +1,10 @@
 package aop
 
-// advice has a function to wrap advice around and code for said
+// Advice has a function to wrap advice around and code for said
 // function
-type advice struct {
-	funktion     string
-	before       string
-	after        string
+type Advice struct {
+	before string
+	after  string
+
 	adviceTypeId int
 }

@@ -1,4 +1,8 @@
 package aop
 
-type pointcut struct {
+// Pointcut describe how to apply a particular aspect
+type Pointcut struct {
+	def      string
+	pkg      string
+	funktion string
 }

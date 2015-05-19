@@ -9,6 +9,8 @@
   [Why]()
   [FAQ]()
   [Goals]()
+  [Help]()
+  [Todo]()
   [Roadmap]()
 
 ### Usage:
@@ -82,8 +84,10 @@ before/after code.
 ### Grammar:
 
   The 'grammar' if you can call it that is a total piece of shit right
-now. It is most definitely not going to stay the same - it will be
-improved in the future.
+now. It is a little bit of go, a little of json, etc. It is most definitely
+not going to stay the same - it will be improved in the future.
+
+  Maybe json encapsulating go? IDK.
 
   I think a good goal to have is to make it as proper go as possible.
 Maybe be a superset. Suggestions welcome.
@@ -254,37 +258,44 @@ This is *alpha* software. It's more of an idea right now than anything
 else.
 
 * Expect the grammars {aspects, pointcuts} to change.
+
 * This is currently slow compared to native go build. Expect that to
   change but right now it's slow.
+
+* Expect the build system to change soon.
+
 * This *might* eat your cat - watch out.
 
-### Future
+### TODO
 
-* what's the rationale of having pointcuts on one function??
-  -- isn't the whole reason to be able to sprinkle it everywhere?
+* partial function matching
 
-* arguments ??
-  -- no argument support yet - want to write a test/patch?
+* matching function declarations
+  - with arguments
+  - with return arguments
 
-* scope is completely fucked atm
-  - choices are to track track scope or to ast or something else..
+* scope - lol
 
 * return statements
   -- explicit return
   -- no return
 
 * better grammar for aspects
+
 * better grammar for pointcuts
 
 * cross file
+
 * cross package w/in project
+
 * cross package
-* affects stdlib
 
 * Better advice
-* More seamlessness
-* Access to stdlib
+
+* More seamless
+
 * Faster
+
 * Better Tested - lulz
 
 ### Help
@@ -298,6 +309,6 @@ else.
 
 ### Roadmap
 
-  We are starting out w/regexen just to prove out the model. Then I'll
-probably transform to the AST parsing. After that we will probably head
-towards IR.
+  * move from regexen to AST
+  * move from AST to IR
+  * add support for stdlib
