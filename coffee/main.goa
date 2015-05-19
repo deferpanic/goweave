@@ -3,15 +3,15 @@ advice execution("func main()") : before {
 }
 
 advice execution("func beforeBob()"): before {
-  fmt.Println("before")
+  fmt.Println("before bob")
 }
 
 advice execution("func afterSally()"): after {
-  fmt.Println("after")
+  fmt.Println("after sally")
 }
 
 advice execution("func aroundTom()"): around {
-  fmt.Println("before")
+  fmt.Println("before tom")
   goaProceed()
-  fmt.Println("after")
+  fmt.Println("after tom")
 }

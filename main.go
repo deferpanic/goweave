@@ -31,7 +31,8 @@ func adviceType() map[int]string {
 // function
 type advice struct {
 	funktion     string
-	code         string
+	before       string
+	after        string
 	adviceTypeId int
 }
 
@@ -115,32 +116,42 @@ func transform(a []advice) {
 	// poor man's scope
 	scope := 0
 
+	cur_advice := advice{}
+
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		l := scanner.Text()
 
-		avize := hasAdvice(a, l)
-		if avize.funktion != "" {
+		newAdvice := hasAdvice(a, l)
+		if newAdvice.funktion != "" {
 			scope += 1
 
-			fmt.Println("found advice:\t" + avize.funktion)
+			fmt.Println("found advice:\t" + newAdvice.funktion)
+			fmt.Println("before advice:\t" + newAdvice.before)
+			fmt.Println("after advice:\t" + newAdvice.after)
 
-			// insert before
-			if avize.adviceTypeId == 1 {
-				out += l + "\n" + avize.code + "\n"
-			} else {
-				out += l + "\n"
+			cur_advice = newAdvice
+
+			// before advice
+			if (cur_advice.adviceTypeId == 1) ||
+				(cur_advice.adviceTypeId == 3) {
+				out += l + "\n" + cur_advice.before + "\n"
+				continue
 			}
 
-		} else {
-
-			// dat scope
-			if strings.Contains(l, "}") {
-				scope -= 1
-			}
-
-			out += l + "\n"
 		}
+
+		// dat scope
+		if strings.Contains(l, "}") || strings.Contains(l, "return") {
+			scope -= 1
+
+			fmt.Println("inserting after advice")
+			fmt.Println(cur_advice.after)
+
+			out += cur_advice.after + "\n"
+		}
+
+		out += l + "\n"
 
 	}
 
@@ -183,6 +194,7 @@ func grab_aspects() []advice {
 
 	cur_advice := advice{}
 
+	donebegin := false
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		l := scanner.Text()
@@ -203,8 +215,25 @@ func grab_aspects() []advice {
 			cur_advice = a
 		} else if strings.Contains(l, "}") {
 			results = append(results, cur_advice)
+		} else if strings.Contains(l, "goaProceed()") {
+			donebegin = true
+			continue
 		} else {
-			cur_advice.code += l + "\n"
+
+			// before
+			if cur_advice.adviceTypeId == 1 {
+				cur_advice.before += l + "\n"
+			} else if cur_advice.adviceTypeId == 2 {
+				fmt.Println("should be after advice")
+				cur_advice.after += l + "\n"
+			} else {
+				if donebegin {
+					cur_advice.after += l + "\n"
+				} else {
+					cur_advice.before += l + "\n"
+				}
+			}
+
 		}
 
 		fmt.Println(scanner.Text())
