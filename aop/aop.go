@@ -26,6 +26,7 @@ func NewAop() *Aop {
 
 }
 
+// Run preps, grabs advice, transforms the src, and builds the code
 func (a *Aop) Run() {
 	a.prep()
 	a.setAdvice()
@@ -81,7 +82,12 @@ func (a *Aop) prep() {
 // whichgo determines provides the full go path to the current go build
 // tool
 func whichGo() string {
-	return "/usr/local/bin/go"
+	out, err := exec.Command("bash", "-c", "which go").CombinedOutput()
+	if err != nil {
+		a.flog.Println(err.Error())
+	}
+
+	return strings.TrimSpace(string(out))
 }
 
 // tmpLocation returns the tmp build dir
@@ -223,7 +229,7 @@ func (a *Aop) setAdvice() {
 			avize.funktion = shiz
 			a.flog.Println("function:" + avize.funktion)
 
-			avize.adviceTypeId = set_advice_type(l)
+			avize.adviceTypeId = adviceKind(l)
 
 			a.flog.Println(avize.adviceTypeId)
 
@@ -260,7 +266,8 @@ func (a *Aop) setAdvice() {
 	a.advice = results
 }
 
-func set_advice_type(l string) int {
+// adviceKind returns the map id of human expression of advice type
+func adviceKind(l string) int {
 	stuff := strings.Split(l, ": ")
 	ostuff := strings.Split(stuff[1], " ")
 

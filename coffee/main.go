@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/deferpanic/goa/coffee/other"
 )
 
 func beforeBob() {
@@ -22,4 +23,6 @@ func main() {
 	beforeBob()
 	afterSally()
 	aroundTom()
+
+	other.FuncMaster()
 }
