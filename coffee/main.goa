@@ -1,17 +1,35 @@
-advice execution("func main()") : before {
+pointcut: "func main()"
+imports: (
+  "fmt"
+  "github.com/deferpanic/deferclient"
+)
+advice: before {
   fmt.Println("before main")
 }
 
-advice execution("func beforeBob()"): before {
+pointcut: "func beforeBob()"
+advice before {
   fmt.Println("before bob")
 }
 
-advice execution("func afterSally()"): after {
+pointcut: "func afterSally()"
+advice: after {
   fmt.Println("after sally")
 }
 
-advice execution("func aroundTom()"): around {
+pointcut: "func aroundTom()"
+advice: around {
   fmt.Println("before tom")
   goaProceed()
   fmt.Println("after tom")
+}
+
+pointcut: "other/func FuncMaster()"
+advice: before {
+  fmt.Println("before in a sub-pkg")
+}
+
+pointcut: "func FuncMaster()"
+advice: after {
+  fmt.Println("after funcmaster flex rother!")
 }

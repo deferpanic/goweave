@@ -3,13 +3,14 @@ package aop
 import (
 	"bufio"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
 	"strings"
 )
 
-// Aop is an instance of an aspect
+// Aop is struct runner for aop transforms
 type Aop struct {
 	flog   *log.Logger
 	advice []advice
@@ -43,15 +44,6 @@ func adviceType() map[int]string {
 	}
 }
 
-// advice has a function to wrap advice around and code for said
-// function
-type advice struct {
-	funktion     string
-	before       string
-	after        string
-	adviceTypeId int
-}
-
 // buildDir determines what the root build dir is
 func (a *Aop) buildDir() string {
 	out, err := exec.Command("bash", "-c", "pwd").CombinedOutput()
@@ -81,7 +73,7 @@ func (a *Aop) prep() {
 
 // whichgo determines provides the full go path to the current go build
 // tool
-func whichGo() string {
+func (a *Aop) whichGo() string {
 	out, err := exec.Command("bash", "-c", "which go").CombinedOutput()
 	if err != nil {
 		a.flog.Println(err.Error())
@@ -98,7 +90,7 @@ func (a *Aop) tmpLocation() string {
 // build does the actual compilation
 // right nowe we piggy back off of 6g/8g
 func (a *Aop) build() {
-	buildstr := "cd " + a.tmpLocation() + " && " + whichGo() + " build && cp " +
+	buildstr := "cd " + a.tmpLocation() + " && " + a.whichGo() + " build && cp " +
 		a.binName() + " " + a.buildDir() + "/."
 
 	fmt.Println(buildstr)
@@ -196,6 +188,21 @@ func (a *Aop) transform() {
 	}
 }
 
+// findAspects finds all aspects for this project
+func (a *Aop) findAspects() []string {
+	aspects := []string{}
+
+	files, _ := ioutil.ReadDir("./")
+	for _, f := range files {
+		if strings.Contains(f.Name(), ".goa") {
+			aspects = append(aspects, f.Name())
+			fmt.Println(f.Name())
+		}
+	}
+
+	return aspects
+}
+
 // grab_aspects looks for an aspect file for each file
 // this seems lame and contrary to what we want...
 // I'd go as far as to say that we want this to be cross-pkg w/in root?
@@ -203,64 +210,62 @@ func (a *Aop) transform() {
 // maybe the rule should be - aspects are valid for anything in a
 // project root?
 func (a *Aop) setAdvice() {
-	aspectsFile := "main.goa"
-
-	file, err := os.Open(aspectsFile)
-	if err != nil {
-		a.flog.Println(err)
-	}
-	defer file.Close()
-
 	results := []advice{}
 
-	cur_advice := advice{}
+	fz := a.findAspects()
+	for i := 0; i < len(fz); i++ {
 
-	donebegin := false
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		l := scanner.Text()
+		file, err := os.Open(fz[i])
+		if err != nil {
+			a.flog.Println(err)
+		}
+		defer file.Close()
 
-		if strings.Contains(l, "advice") {
-			blah := strings.Split(l, "execution(\"")[1]
-			shiz := strings.Split(blah, "\"")[0]
-			fmt.Println("Method: " + shiz)
+		cur_advice := advice{}
 
-			avize := advice{}
-			avize.funktion = shiz
-			a.flog.Println("function:" + avize.funktion)
+		donebegin := false
+		scanner := bufio.NewScanner(file)
+		for scanner.Scan() {
+			l := scanner.Text()
 
-			avize.adviceTypeId = adviceKind(l)
+			if strings.Contains(l, "advice") {
+				blah := strings.Split(l, "execution(\"")[1]
+				shiz := strings.Split(blah, "\"")[0]
 
-			a.flog.Println(avize.adviceTypeId)
+				avize := advice{}
+				avize.funktion = shiz
 
-			cur_advice = avize
-		} else if strings.Contains(l, "}") {
-			results = append(results, cur_advice)
-		} else if strings.Contains(l, "goaProceed()") {
-			donebegin = true
-			continue
-		} else {
+				avize.adviceTypeId = adviceKind(l)
 
-			// before
-			if cur_advice.adviceTypeId == 1 {
-				cur_advice.before += l + "\n"
-			} else if cur_advice.adviceTypeId == 2 {
-				cur_advice.after += l + "\n"
+				cur_advice = avize
+			} else if strings.Contains(l, "}") {
+				results = append(results, cur_advice)
+			} else if strings.Contains(l, "goaProceed()") {
+				donebegin = true
+				continue
 			} else {
-				if donebegin {
+
+				// before
+				if cur_advice.adviceTypeId == 1 {
+					cur_advice.before += l + "\n"
+				} else if cur_advice.adviceTypeId == 2 {
 					cur_advice.after += l + "\n"
 				} else {
-					cur_advice.before += l + "\n"
+					if donebegin {
+						cur_advice.after += l + "\n"
+					} else {
+						cur_advice.before += l + "\n"
+					}
 				}
+
 			}
 
 		}
 
-		fmt.Println(scanner.Text())
-	}
+		if err := scanner.Err(); err != nil {
+			a.flog.Println(err)
+		}
 
-	if err := scanner.Err(); err != nil {
-		a.flog.Println(err)
 	}
 
 	a.advice = results

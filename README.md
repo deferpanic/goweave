@@ -1,6 +1,15 @@
 # goa
-Aspect Oriented Programming for Go
+  Aspect Oriented Programming for Go
 
+### TOC
+
+  [Usage]()
+  [Examples]()
+  [What is AOP]()
+  [Why]()
+  [FAQ]()
+  [Goals]()
+  [Roadmap]()
 
 ### Usage:
 
@@ -72,16 +81,86 @@ before/after code.
 
 ### Grammar:
 
-  I know - just like the name - the grammar sucks right now. It shall be
+  The 'grammar' if you can call it that is a total piece of shit right
+now. It is most definitely not going to stay the same - it will be
 improved in the future.
+
+  I think a good goal to have is to make it as proper go as possible.
+Maybe be a superset. Suggestions welcome.
 
 ## What is AOP !??
 
   [Aspect oriented programming](http://docs.jboss.org/aop/1.1/aspect-framework/userguide/en/html/what.html)
 
+### Definitions:
+
+  * join point - places you can apply behavior
+  * pointcut - expression that details where to apply behavior
+    -- right now we explicitly match on function names
+
+  * advice - behavior to apply
+  * aspect - a .goa file - file that contains our behavior
+
 ### Aspects:
 
-### Cutpoints:
+  Aspects are common features that you use everywhere that don't really
+have anything at all to do with your domain logic. If you have a user
+interface that deals with updating passwords, setting preferences, etc.
+logging might be done in the same way as you would log a dog.
+
+  Similariy if you had a http controller that whenever you got a request
+you would update a metric counter for that controller but you do this on
+each api controller - that really has nothing at all to do with the
+controller logic itself. The metric might simply be another aspect that
+is commong everywhere.
+
+### PointCut:
+
+  Pointcuts in other languages such as java can commonly use annotations
+    -- we currently don't support this as we want to be un-obtrusive as possible
+    -- that is - we don't want to modify go source
+
+  All pointcuts are currently defined in the same file. This is
+definitely open to discussion on what is best though.
+
+  All pointcuts are currently defined only on functions.
+
+  There is no method overloading in go so currently the last thing in a
+pointcut definition will be the method name (which can be a partial
+match).
+
+  Note: this 'grammar' if you can call it that sucks - expect it to
+change "heavily".
+
+  * explicit method name
+    ```go
+      "blah"
+    ```
+
+  * partial match method name
+    ```go
+      "b"
+    ```
+
+  * function declaration
+    ```go
+      (w http.ResponseWriter, r *http.Request)
+    ```
+
+  * sub-pkg && method name
+    ```go
+      pkg/blah
+    ```
+
+  * struct && method name
+    ```go
+      struct.b
+    ```
+
+  * sub-pkg && struct && method-name
+    ```go
+      pkg/struct.b
+    ```
 
 ### Advice:
 
@@ -108,10 +187,20 @@ you can do with this is just way too conveinent.
 I'm definitely not a code purist - to me coding is a tool first and
 foremost.
 
+### Goals
+
+* fast - obviously there will always be greater overhead than just
+  running go build but we don't want this to be obscene
+
+* correct - it goes w/out saying this is highly important to be as
+  correct as possible w/our code generation
 
 ### FAQ
 
 * why Not go generate?
+
+  I don't intend for this codebase to live on regexen forever. It's more
+of a POC while the business logic gets sorted out.
 
 * Why not AST?
   I think we want to move all the regexen to AST. This started out as a
@@ -128,6 +217,28 @@ the future.
 
   That's a long ways away but not off the radar/roadmap.
 
+* Why wouldn't you just code this into your source?
+  A couple of reasons.
+
+  1) If you are going to do something like development tracing (eg:
+sprinkle some fmt.Println everywhere) you don't want that in your
+production code. It's much better to apply it when necessary in your
+binary, fix the problem and go - there is no need to code it in, then
+hack it back out (and potentially miss some). It's *much* cleaner this
+way.
+
+  2) The original reason we did this was over at DeferPanic we had many
+requests from people wanting to use our code to automatically insert
+code in. For existing codebases this was a lot of work. After we made a
+[tool](https://github.com/deferpanic/deprehend) that did this code
+generation we had requests to make it non-obtrusive - that is - they
+didn't want the code inside their codebase - just available to them at
+runtime.
+
+  3) I'd like the ability to turn on/off the behavior at will *and* not
+have to re-code it for every project. I think this is where AOP really
+shines.
+
 * Did DeferPanic Just Jump the Shark?
   :) No, we are practioners of the "get-shit-done" philosophy. Ergo, we
 don't care about philosophy of programming, nor do we care about other
@@ -137,7 +248,20 @@ armchair constraints. We only care about - how fast can I get this done?
 codebases and we want to send 'tracer bullets' out very very fast. This
 practice allows us to do that.
 
+### What You Should Know Before Using
+
+This is *alpha* software. It's more of an idea right now than anything
+else.
+
+* Expect the grammars {aspects, pointcuts} to change.
+* This is currently slow compared to native go build. Expect that to
+  change but right now it's slow.
+* This *might* eat your cat - watch out.
+
 ### Future
+
+* what's the rationale of having pointcuts on one function??
+  -- isn't the whole reason to be able to sprinkle it everywhere?
 
 * arguments ??
   -- no argument support yet - want to write a test/patch?
@@ -149,6 +273,9 @@ practice allows us to do that.
   -- explicit return
   -- no return
 
+* better grammar for aspects
+* better grammar for pointcuts
+
 * cross file
 * cross package w/in project
 * cross package
@@ -159,3 +286,18 @@ practice allows us to do that.
 * Access to stdlib
 * Faster
 * Better Tested - lulz
+
+### Help
+
+  Want to help? Ideas for helping out:
+
+    * test coverage
+    * benchmark coverage
+    * sample aspects - aspects should be shared - no need to re-invent
+      the wheel here
+
+### Roadmap
+
+  We are starting out w/regexen just to prove out the model. Then I'll
+probably transform to the AST parsing. After that we will probably head
+towards IR.
