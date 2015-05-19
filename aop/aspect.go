@@ -2,7 +2,6 @@ package aop
 
 import (
 	"io/ioutil"
-	"log"
 	"strings"
 )
 
@@ -49,23 +48,35 @@ func (a *Aop) parsePointCut(body string) Pointcut {
 
 // parseImports returns an array of imports for the corresponding advice
 func (a *Aop) parseImports(body string) []string {
-	imp := strings.Split(body, "imports (")[1]
-	end := strings.Split(imp, ")")[0]
-	t := strings.TrimSpace(end)
-	return strings.Split(t, "\n")
+	impbrace := strings.Split(body, "imports (")
+
+	if len(impbrace) > 1 {
+		end := strings.Split(impbrace[1], ")")[0]
+		t := strings.TrimSpace(end)
+		return strings.Split(t, "\n")
+	} else {
+		return []string{}
+	}
 }
 
 // parseAdvice returns advice about this aspect
 func (a *Aop) parseAdvice(body string) Advice {
 	advize := strings.Split(body, "advice:")[1]
 
-	be := strings.Split(advize, "before: {")[1]
-	b4 := strings.Split(be, "}")[0]
-	b4t := strings.TrimSpace(b4)
+	a4t := ""
+	b4t := ""
 
-	ae := strings.Split(advize, "after: {")[1]
-	a4 := strings.Split(ae, "}")[0]
-	a4t := strings.TrimSpace(a4)
+	bbrace := strings.Split(advize, "before: {")
+	if len(bbrace) > 1 {
+		b4 := strings.Split(bbrace[1], "}")[0]
+		b4t = strings.TrimSpace(b4)
+	}
+
+	abrace := strings.Split(advize, "after: {")
+	if len(abrace) > 1 {
+		a4 := strings.Split(abrace[1], "}")[0]
+		a4t = strings.TrimSpace(a4)
+	}
 
 	return Advice{
 		before: b4t,
@@ -95,46 +106,5 @@ func (a *Aop) parseAspectFile(body string) {
 	}
 
 	a.aspects = results
-
-	log.Println(len(a.aspects))
-	/*
-				if strings.Contains(l, "advice") {
-					blah := strings.Split(l, "execution(\"")[1]
-					shiz := strings.Split(blah, "\"")[0]
-
-					aspect := aspect{}
-					avize := advice{}
-					aspect.avice = avize
-					avize.funktion = shiz
-
-					avize.adviceTypeId = adviceKind(l)
-
-					cur_advice = avize
-				} else if strings.Contains(l, "}") {
-					results = append(results, cur_advice)
-				} else if strings.Contains(l, "goaProceed()") {
-					donebegin = true
-					continue
-				} else {
-
-					// before
-					if cur_advice.adviceTypeId == 1 {
-						cur_advice.before += l + "\n"
-					} else if cur_advice.adviceTypeId == 2 {
-						cur_advice.after += l + "\n"
-					} else {
-						if donebegin {
-							cur_advice.after += l + "\n"
-						} else {
-							cur_advice.before += l + "\n"
-						}
-					}
-
-				}
-
-			}
-
-		}
-	*/
 
 }

@@ -4,22 +4,28 @@ aspect {
     "fmt"
     "github.com/deferpanic/deferclient"
   )
-  advice: before {
-    fmt.Println("before main")
+  advice: {
+    before: {
+      fmt.Println("before main")
+    }
   }
 }
 
 aspect {
   pointcut: beforeBob
-  advice before {
-    fmt.Println("before bob")
+  advice: {
+    before: {
+      fmt.Println("before bob")
+    }
   }
 }
 
 aspect {
   pointcut: afterSally
-  advice: after {
-    fmt.Println("after sally")
+  advice: {
+    after: {
+      fmt.Println("after sally")
+    }
   }
 }
 
@@ -37,28 +43,36 @@ aspect {
 
 aspect {
   pointcut: other/FuncMaster
-  advice: before {
-    fmt.Println("before in a sub-pkg")
+  advice: {
+    before: {
+      fmt.Println("before in a sub-pkg")
+    }
   }
 }
 
 aspect {
   pointcut: FuncMaster
-  advice: after {
-    fmt.Println("after funcmaster flex rother!")
+  advice: {
+    after: {
+      fmt.Println("after funcmaster flex rother!")
+    }
   }
 }
 
 aspect {
   pointcut: FuncWithArgs(iarg int, sarg string)
-  advice: after {
-    fmt.Println("on args")
+  advice: {
+    after: {
+      fmt.Println("on args")
+    }
   }
 }
 
 aspect {
   pointcut: FuncWithArgsAndReturn(iarg int, sarg string) (int, errror)
-  advice: after {
-    fmt.Println("on args")
+  advice: {
+    after: {
+      fmt.Println("on args")
+    }
   }
 }

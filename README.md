@@ -268,6 +268,9 @@ else.
 
 ### TODO
 
+* better error handling
+  - can do bail outs if parser doesn't emit correctly
+
 * partial function matching
 
 * matching function declarations

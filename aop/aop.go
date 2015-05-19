@@ -35,15 +35,6 @@ func (a *Aop) Run() {
 	a.build()
 }
 
-// adviceType returns a map of id to human expression of advice types
-func adviceType() map[int]string {
-	return map[int]string{
-		1: "before",
-		2: "after",
-		3: "around",
-	}
-}
-
 // buildDir determines what the root build dir is
 func (a *Aop) buildDir() string {
 	out, err := exec.Command("bash", "-c", "pwd").CombinedOutput()
