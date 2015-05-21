@@ -1,7 +1,6 @@
 package aop
 
 import (
-	"errors"
 	"io/ioutil"
 	"strings"
 )
@@ -31,23 +30,6 @@ func (a *Aop) loadAspects() {
 		s := string(buf)
 
 		a.parseAspectFile(s)
-	}
-}
-
-// parsePointCut parses out a pointcut from shit
-func (a *Aop) parsePointCut(body string) (Pointcut, error) {
-	pc := strings.Split(body, "pointcut:")
-
-	if len(pc) > 1 {
-		rpc := strings.Split(pc[1], "\n")[0]
-		t := strings.TrimSpace(rpc)
-
-		return Pointcut{
-			def:      t,
-			funktion: t,
-		}, nil
-	} else {
-		return Pointcut{}, errors.New("invalid pointcut")
 	}
 }
 

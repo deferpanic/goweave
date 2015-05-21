@@ -37,18 +37,33 @@ simply replace with
 
 ### Use Cases
   * error detection && correction
+    (ex: force logging of errors on these methods)
+
   * data validation
+    (ex: notate that this data was invalid but allow it to continue)
+
   * i18n
+    (ex: translate this to german if accessed in an improper way)
+
   * security
+    (ex: authenticate this user in each http request)
+
   * caching
+    (ex: cache these variables when exposed in a http request)
+
   * logging
+    (ex: log when this group of users accesses these methods)
+
   * monitoring
   * metrics
+    (ex: cnt the number of times this function is called)
+
   * tracing
+    (ex: print out the value of this variable in a pkg)
 
 ### Examples:
 
-The coffee folder has some examples you might wish to look at.
+The example folder has some examples you might wish to look at.
 Essentially we support aspect files w/in a project. If code exists in
 your project we should be able to provide aspect coverage for it.
 
@@ -107,8 +122,25 @@ Maybe be a superset. Suggestions welcome.
 ### Definitions:
 
   * join point - places you can apply behavior
+    -- method call
+    ex:
+    ```go
+      some.stuff()
+    ```
+
+    Code will be executed {before, around, after} this call.
+
+    -- method execution (what we are doing right now)
+    ```go
+      func stuff() {
+      }
+    ```
+
+    Code will be executed inside this function at the start, middle, or
+end.
+
   * pointcut - expression that details where to apply behavior
-    -- right now we explicitly match on function names
+    -- right now we only explicitly match on function names
 
   * advice - behavior to apply
   * aspect - a .goa file - file that contains our behavior
@@ -278,6 +310,8 @@ else.
 
 ### TODO
 
+* de-duping of imports
+
 * inner vs. outer cutpoints
 
 * better error handling
@@ -291,6 +325,8 @@ else.
 
 * scope - lol
   - this is currently completely stupid and we have 0% support for
+
+* relative path fix - lol
 
 * return statements
   -- explicit return
@@ -315,6 +351,10 @@ else.
 * Faster
 
 * Better Tested - lulz
+
+* make it easy to share advice/aspects through a central site
+  -- maybe start off w/just github
+
 
 ### Help
 

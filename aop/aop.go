@@ -108,10 +108,19 @@ func (a *Aop) build() {
 func pointCutMatch(a []Aspect, l string) Aspect {
 	for i := 0; i < len(a); i++ {
 
-		// look for functions
+		// look for exact functions
 		if strings.Contains(l, "func "+a[i].pointkut.def) {
 			return a[i]
 		}
+
+		// look for partial function match
+		// beforeBob
+
+		// look for function declarations
+		// (w http.ResponseWriter, r *http.Request)
+		//if strings.Contains(l, a[i].pointkut.def) {
+		//	return a[i]
+		//}
 
 		// look for package/function
 		//if strings.Contains(l, "func "+a[i].pointkut.def) {
@@ -129,6 +138,8 @@ func (a *Aop) transform() {
 
 	fzs := a.findGoFiles()
 
+	rootpkg := a.rootPkg()
+
 	for i := 0; i < len(fzs); i++ {
 		curfile := fzs[i]
 
@@ -143,11 +154,35 @@ func (a *Aop) transform() {
 		// poor man's scope
 		scope := 0
 
+		// poor man's import parsing
+		inImport := false
+
 		cur_aspect := Aspect{}
 
 		scanner := bufio.NewScanner(file)
 		for scanner.Scan() {
 			l := scanner.Text()
+
+			// fix me - we can get these from the AST
+			if a.importBlock(l) || inImport {
+				inImport = true
+
+				if strings.Contains(l, "\"") {
+					fmt.Println("found import")
+					fmt.Println(l)
+
+					if strings.Contains(l, rootpkg) {
+						l = a.rewriteImport(l, rootpkg)
+					}
+				}
+			}
+
+			// close us out of import block if we are done
+			if inImport {
+				if strings.Contains(l, ")") {
+					inImport = false
+				}
+			}
 
 			newAspect := pointCutMatch(a.aspects, l)
 			if newAspect.pointkut.def != "" {
@@ -195,6 +230,21 @@ func (a *Aop) transform() {
 	}
 }
 
+// rewriteImport is intended to rewrite a sub pkg of the base pkg to a
+// relative path since we for now cp it to a diff. workspace
+func (a *Aop) rewriteImport(l string, rp string) string {
+	return strings.Replace(l, rp, ".", -1)
+}
+
+// importBlock detects if we are in an import statement or block
+func (a *Aop) importBlock(l string) bool {
+	if strings.Contains(l, "import") {
+		return true
+	} else {
+		return false
+	}
+}
+
 // findGoFiles recursively finds all go files in a project
 func (a *Aop) findGoFiles() []string {
 	res := []string{}
@@ -212,6 +262,18 @@ func (a *Aop) findGoFiles() []string {
 	}
 
 	return res
+}
+
+// rootPkg returns the root package of a go build
+// this is needed to determine whether or not sub-pkg imports need to be
+// re-written - which is basically any project w/more than one folder
+func (a *Aop) rootPkg() string {
+	out, err := exec.Command("bash", "-c", "go list").CombinedOutput()
+	if err != nil {
+		a.flog.Println(err.Error())
+	}
+
+	return strings.TrimSpace(string(out))
 }
 
 // findAspects finds all aspects for this project
