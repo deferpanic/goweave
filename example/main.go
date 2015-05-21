@@ -17,12 +17,17 @@ func aroundTom() {
 	fmt.Println("around")
 }
 
+func innerFors() {
+	fmt.Println("inner")
+}
+
 func main() {
 	fmt.Println("test of the microphone")
 
 	beforeBob()
 	afterSally()
 	aroundTom()
+	innerFors()
 
 	other.FuncMaster()
 }

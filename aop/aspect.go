@@ -1,6 +1,7 @@
 package aop
 
 import (
+	"errors"
 	"io/ioutil"
 	"strings"
 )
@@ -34,16 +35,20 @@ func (a *Aop) loadAspects() {
 }
 
 // parsePointCut parses out a pointcut from shit
-func (a *Aop) parsePointCut(body string) Pointcut {
-	pc := strings.Split(body, "pointcut:")[1]
-	rpc := strings.Split(pc, "\n")[0]
-	t := strings.TrimSpace(rpc)
+func (a *Aop) parsePointCut(body string) (Pointcut, error) {
+	pc := strings.Split(body, "pointcut:")
 
-	return Pointcut{
-		def:      t,
-		funktion: t,
+	if len(pc) > 1 {
+		rpc := strings.Split(pc[1], "\n")[0]
+		t := strings.TrimSpace(rpc)
+
+		return Pointcut{
+			def:      t,
+			funktion: t,
+		}, nil
+	} else {
+		return Pointcut{}, errors.New("invalid pointcut")
 	}
-
 }
 
 // parseImports returns an array of imports for the corresponding advice
@@ -59,6 +64,29 @@ func (a *Aop) parseImports(body string) []string {
 	}
 }
 
+// containsBefore returns true if the body has before advice
+func (a *Aop) containsBefore(body string) bool {
+	if strings.Contains(body, "before: {") {
+		return true
+	} else {
+		return false
+	}
+}
+
+// containsAfter returns true if the body has after advice
+func (a *Aop) containsAfter(body string) bool {
+	if strings.Contains(body, "after: {") {
+		return true
+	} else {
+		return false
+	}
+}
+
+// rightBraceCnt returns the number of right braces in a string
+func (a *Aop) rightBraceCnt(body string) int {
+	return strings.Count(body, "}")
+}
+
 // parseAdvice returns advice about this aspect
 func (a *Aop) parseAdvice(body string) Advice {
 	advize := strings.Split(body, "advice:")[1]
@@ -68,8 +96,28 @@ func (a *Aop) parseAdvice(body string) Advice {
 
 	bbrace := strings.Split(advize, "before: {")
 	if len(bbrace) > 1 {
-		b4 := strings.Split(bbrace[1], "}")[0]
-		b4t = strings.TrimSpace(b4)
+		// fixme
+		if a.containsAfter(bbrace[1]) {
+			b4 := strings.Split(bbrace[1], "}")[0]
+			b4t = strings.TrimSpace(b4)
+			// ...
+		} else {
+			cnt := a.rightBraceCnt(bbrace[1])
+			// have at most 3 right braces
+			// 3 - 3 = 0
+			// 4 - 3 = 1
+			b4 := strings.SplitAfter(bbrace[1], "}")
+			rb := ""
+			if cnt == 3 {
+				rb = b4[0]
+				rb = rb[:len(rb)-1]
+			} else {
+				for i := 0; i < cnt-3; i++ {
+					rb += strings.TrimSpace(b4[i])
+				}
+			}
+			b4t = strings.TrimSpace(rb)
+		}
 	}
 
 	abrace := strings.Split(advize, "after: {")
@@ -96,7 +144,14 @@ func (a *Aop) parseAspectFile(body string) {
 		aspect := aspects[i]
 		azpect := Aspect{}
 
-		azpect.pointkut = a.parsePointCut(aspect)
+		pk, err := a.parsePointCut(aspect)
+		if err != nil {
+			a.flog.Println(err)
+			continue
+		} else {
+			azpect.pointkut = pk
+		}
+
 		azpect.importz = a.parseImports(aspect)
 
 		azpect.advize = a.parseAdvice(aspect)

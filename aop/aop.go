@@ -107,10 +107,17 @@ func (a *Aop) build() {
 // line or returns an empty aspect
 func pointCutMatch(a []Aspect, l string) Aspect {
 	for i := 0; i < len(a); i++ {
+
 		// look for functions
 		if strings.Contains(l, "func "+a[i].pointkut.def) {
 			return a[i]
 		}
+
+		// look for package/function
+		//if strings.Contains(l, "func "+a[i].pointkut.def) {
+		//		return a[i]
+		//	}
+
 	}
 
 	return Aspect{}
@@ -145,11 +152,6 @@ func (a *Aop) transform() {
 			newAspect := pointCutMatch(a.aspects, l)
 			if newAspect.pointkut.def != "" {
 				scope += 1
-
-				fmt.Println("pointcut def:\t" + newAspect.pointkut.def)
-				fmt.Println("pointcut function:\t" + newAspect.pointkut.funktion)
-				fmt.Println("before advice:\t" + newAspect.advize.before)
-				fmt.Println("after advice:\t" + newAspect.advize.after)
 
 				cur_aspect = newAspect
 

@@ -38,7 +38,11 @@ aspect {
 		t.Error("didn't parse imports correctly")
 	}
 
-	if first.advize.before != "fmt.Println(\"before main\")" {
+	s := `fmt.Println("before main")`
+
+	if first.advize.before != s {
+		t.Error(s)
+		t.Error(first.advize.before)
 		t.Error("didn't parse advice correctly")
 	}
 
@@ -185,6 +189,40 @@ aspect {
 	}
 
 	if first.advize.after != "fmt.Println(\"after main\")" {
+		t.Error("didn't parse advice correctly")
+	}
+
+}
+
+func TestAspectScope(t *testing.T) {
+
+	f := `
+aspect {
+  pointcut: innerFors
+  advice: {
+    before: {
+        for i:=0; i<10; i++ {
+          fmt.Println(i)
+        }
+    }
+  }
+}
+`
+
+	aop := &Aop{}
+	aop.parseAspectFile(f)
+
+	if len(aop.aspects) != 1 {
+		t.Error("didn't parse aspects")
+	}
+
+	first := aop.aspects[0]
+
+	s := `for i:=0; i<10; i++ {
+          fmt.Println(i)
+        }`
+
+	if first.advize.before != s {
 		t.Error("didn't parse advice correctly")
 	}
 
