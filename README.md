@@ -379,6 +379,10 @@ else.
 ### TODO - shortlist before opening up
 
   * need to be able to wrap a method
+    (eg: http handler, eg: need some AST <3)
+
+  * need to be able to modify a goroutine
+    (need that AST <3 again)
 
   * better name
 
