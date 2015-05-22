@@ -378,6 +378,8 @@ else.
 
 ### TODO - shortlist before opening up
 
+  * need to be able to wrap a method
+
   * better name
 
   * logo

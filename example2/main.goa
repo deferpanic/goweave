@@ -1,0 +1,14 @@
+aspect {
+  pointcut: main
+  imports (
+    "fmt"
+    "github.com/deferpanic/deferclient/deferstats"
+  )
+  advice: {
+    before: {
+      dps := deferstats.NewClient("v00L0K6CdKjE4QwX5DL1iiODxovAHUfo")
+      go dps.CaptureStats()
+      fmt.Println("before main")
+    }
+  }
+}

@@ -142,6 +142,7 @@ func (a *Aop) transform() {
 
 	for i := 0; i < len(fzs); i++ {
 		curfile := fzs[i]
+		importsNeeded := []string{}
 
 		file, err := os.Open(curfile)
 		if err != nil {
@@ -186,6 +187,11 @@ func (a *Aop) transform() {
 			if newAspect.pointkut.def != "" {
 				scope += 1
 
+				// insert any imports we need to
+				for x := 0; x < len(newAspect.importz); x++ {
+					importsNeeded = append(importsNeeded, newAspect.importz[x])
+				}
+
 				cur_aspect = newAspect
 
 				// before advice
@@ -219,6 +225,8 @@ func (a *Aop) transform() {
 
 		defer f.Close()
 
+		out = a.addMissingImports(importsNeeded, out)
+
 		b, err := f.WriteString(out)
 		fmt.Println(b)
 		if err != nil {
@@ -226,6 +234,29 @@ func (a *Aop) transform() {
 		}
 
 	}
+}
+
+// addMissingImports adds any imports from advice that was found
+func (a *Aop) addMissingImports(imports []string, out string) string {
+
+	if strings.Contains(out, "import (") {
+		s := "\n"
+		for i := 0; i < len(imports); i++ {
+			s += imports[i] + "\n"
+		}
+
+		out = strings.Replace(out, "import (", "import ("+s, -1)
+	} else {
+
+		s := ""
+		for i := 0; i < len(imports); i++ {
+			s += "import " + imports[i] + "\n"
+		}
+
+		out = strings.Replace(out, "import ", s+"import", -1)
+	}
+
+	return out
 }
 
 // rewriteImport is intended to rewrite a sub pkg of the base pkg to a

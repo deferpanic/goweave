@@ -1,0 +1,16 @@
+package main
+
+import (
+	"net/http"
+)
+
+// panic test
+func panicHandler(w http.ResponseWriter, r *http.Request) {
+	panic("there is no need to panic")
+}
+
+func main() {
+	http.HandleFunc("/panic", panicHandler)
+
+	http.ListenAndServe(":3000", nil)
+}
