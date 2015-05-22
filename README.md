@@ -3,23 +3,23 @@
 
 ### TOC
 
-  [Usage]()
+  [Usage](https://github.com/deferpanic/goa#usage)
 
-  [Examples]()
+  [Examples](https://github.com/deferpanic/goa#examples)
 
-  [What is AOP]()
+  [What is AOP](https://github.com/deferpanic/goa#what_is_aop)
 
-  [Why]()
+  [Why](https://github.com/deferpanic/goa#why)
 
-  [FAQ]()
+  [FAQ](https://github.com/deferpanic/goa#faq)
 
-  [Goals]()
+  [Goals](https://github.com/deferpanic/goa#goals)
 
-  [Help]()
+  [Help](https://github.com/deferpanic/goa#help)
 
   [Todo](https://github.com/deferpanic/goa#todo)
 
-  [Roadmap]()
+  [Roadmap](https://github.com/deferpanic/goa#roadmap)
 
 ### Usage:
 
@@ -37,7 +37,7 @@ simply replace with
 
 ### Use Cases
   * error detection && correction
-    (ex: force logging of errors on these methods)
+    (ex: force logging of errors on any methods with this declaration)
 
   * data validation
     (ex: notate that this data was invalid but allow it to continue)
@@ -55,6 +55,8 @@ simply replace with
     (ex: log when this group of users accesses these methods)
 
   * monitoring
+    (ex: ensure that if this channel closes we always alert joebob)
+
   * metrics
     (ex: cnt the number of times this function is called)
 
@@ -73,36 +75,54 @@ projects && into stdlib. Stdlib probably won't come until we move to IR.
 #### Before Main
 
 ```go
-advice execution("func main()") : before {
-  fmt.Println("before main")
+aspect {
+  pointcut: main
+  advice: {
+    before: {
+      fmt.Println("before main")
+    }
+  }
 }
 ```
 
 #### Before Function
 ```go
-advice execution("func beforeBob()"): before {
-  fmt.Println("before bob")
+aspect {
+  pointcut: beforeBob
+  advice: {
+    before: {
+      fmt.Println("before bob")
+    }
+  }
 }
 ```
 
 #### After Function
 ```
-advice execution("func afterSally()"): after {
-  fmt.Println("after sally")
+aspect {
+  pointcut: afterSally
+  advice: {
+    after: {
+      fmt.Println("after sally")
+    }
+  }
 }
 ```
 
 ### Around Function
 ```
-advice execution("func aroundTom()"): around {
-  fmt.Println("before tom")
-  goaProceed()
-  fmt.Println("after tom")
+aspect {
+  pointcut: aroundTom
+  advice: {
+    before: {
+      fmt.Println("before tom")
+    }
+    after: {
+      fmt.Println("after tom")
+    }
+  }
 }
 ```
-
-The goaProceed() fake function is stripped and denotes the mark between
-before/after code.
 
 ### Grammar:
 
@@ -110,10 +130,9 @@ before/after code.
 now. It is a little bit of go, a little of json, etc. It is most definitely
 not going to stay the same - it will be improved in the future.
 
-  Maybe json encapsulating go? IDK.
+  I apologize for giving you the forks to stab your collective eyes out.
 
-  I think a good goal to have is to make it as proper go as possible.
-Maybe be a superset. Suggestions welcome.
+  I think a good goal to have is to make it as proper go as possible. Suggestions welcome.
 
 ## What is AOP !??
 
@@ -130,19 +149,50 @@ Maybe be a superset. Suggestions welcome.
 
     Code will be executed {before, around, after} this call.
 
+    before:
+    ```go
+      fmt.Println("before")
+      some.stuff()
+    ```
+
+    after:
+    ```go
+      some.stuff()
+      fmt.Println("before")
+    ```
+
     -- method execution (what we are doing right now)
     ```go
       func stuff() {
+        fmt.Println("stuff")
       }
     ```
 
-    Code will be executed inside this function at the start, middle, or
-end.
+    before:
+    ```go
+      func stuff() {
+        fmt.Println("before")
+        fmt.Println("stuff")
+      }
+    ```
+
+    after:
+    ```go
+      func stuff() {
+        fmt.Println("stuff")
+        fmt.Println("after")
+      }
+    ```
 
   * pointcut - expression that details where to apply behavior
     -- right now we only explicitly match on function names
 
+    ```go
+      pointcut: beforeBob
+    ```
+
   * advice - behavior to apply
+
   * aspect - a .goa file - file that contains our behavior
 
 ### Aspects:
@@ -178,12 +228,20 @@ change "heavily".
 
   * explicit method name
     ```go
-      "blah"
+      call("blah")
+    ```
+
+    ```go
+      execute("blah")
     ```
 
   * partial match method name
     ```go
-      "b"
+      call(b.*)
+    ```
+
+    ```go
+      execute(b.*)
     ```
 
   * function declaration
@@ -196,17 +254,21 @@ change "heavily".
       pkg/blah
     ```
 
-  * struct && method name
-    ```go
-      struct.b
-    ```
-
   * sub-pkg && struct && method-name
     ```go
       pkg/struct.b
     ```
 
+  # note - you have to have the AST for this
+  * struct && method name
+    ```go
+      struct.b
+    ```
+
+
 ### Advice:
+
+  We currently support the following advice:
 
   * before
   * after
@@ -224,12 +286,18 @@ an extension of that work.
 The name sucks - suggest a new one.
 
 ### Why!??!
-We came to go to get away from java!! I agree this concept can and has
-been abused in the past. However, being able to do some of the things
-you can do with this is just way too conveinent.
+We came to go to get away from java!! What's the matter with you!?
+
+I agree this concept can and has been abused in the past. However, being
+able to do some of the things you can do with this is just way too
+conveinent.
 
 I'm definitely not a code purist - to me coding is a tool first and
 foremost.
+
+I simply wanted an easy way to attach common bits of code to large
+existing codebases without lifting a finger. That is the rationale
+behind this.
 
 ### Goals
 
@@ -301,60 +369,56 @@ else.
 
 * Expect the grammars {aspects, pointcuts} to change.
 
-* This is currently slow compared to native go build. Expect that to
+* This is currently *much* slower compared to native go build. Expect that to
   change but right now it's slow.
 
 * Expect the build system to change soon.
 
 * This *might* eat your cat - watch out.
 
+### TODO - shortlist before opening up
+
+  * better name
+
+  * logo
+
+  * split up file re-writing into something that we can test easily
+
+  * de-duping of imports
+    -- if multiple imports are added
+
+  * partial function matching
+
 ### TODO
 
-* de-duping of imports
-
 * inner vs. outer cutpoints
+  - tha fuck?
 
 * better error handling
   - can do bail outs if parser doesn't emit correctly
-
-* partial function matching
+  - prob. err on gratitutious
 
 * matching function declarations
   - with arguments
   - with return arguments
 
 * scope - lol
-  - this is currently completely stupid and we have 0% support for
+  - this is currently completely stupid
 
 * relative path fix - lol
+  - relative paths are hacky
 
-* return statements
-  -- explicit return
-  -- no return
-
-* convert all this exec stuff to go
-
-* better grammar for aspects
-
-* better grammar for pointcuts
+* convert all this exec stuff to native go if possible
 
 * cross file
-
-* cross package w/in project
-
-* cross package
-
-* Better advice
-
-* More seamless
+  -- test?
 
 * Faster
 
 * Better Tested - lulz
 
 * make it easy to share advice/aspects through a central site
-  -- maybe start off w/just github
-
+  -- maybe start off w/just github?
 
 ### Help
 
@@ -367,6 +431,18 @@ else.
 
 ### Roadmap
 
-  * move from regexen to AST
-  * move from AST to IR
+#### Grammars
+  * better aspect grammar
+  * better pointcut grammar
+
+#### Parsing/Speed
+    * move from regexen to AST
+    * move from AST to IR
+
+#### Extending
+  * add support for 3rd party pkgs
   * add support for stdlib
+
+#### Interface Pointcuts
+  * be able to define on interface fields
+  * be able to define on methods that satisfy interfaces

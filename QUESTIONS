@@ -1,7 +1,0 @@
-* does it make sense to have one aspect file for each pkg namespaced by
-  pkg?
-
-  if so =>
-    * how do you attack stdlib?
-    * how do you attack 3rd party libs?
-

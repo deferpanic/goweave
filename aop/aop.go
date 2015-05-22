@@ -96,9 +96,9 @@ func (a *Aop) build() {
 		a.binName() + " " + a.buildDir() + "/."
 
 	fmt.Println(buildstr)
-	_, err := exec.Command("bash", "-c", buildstr).CombinedOutput()
+	o, err := exec.Command("bash", "-c", buildstr).CombinedOutput()
 	if err != nil {
-		a.flog.Println(err.Error())
+		a.flog.Println(string(o))
 	}
 
 }
@@ -168,8 +168,6 @@ func (a *Aop) transform() {
 				inImport = true
 
 				if strings.Contains(l, "\"") {
-					fmt.Println("found import")
-					fmt.Println(l)
 
 					if strings.Contains(l, rootpkg) {
 						l = a.rewriteImport(l, rootpkg)

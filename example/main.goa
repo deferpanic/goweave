@@ -52,6 +52,23 @@ aspect {
   }
 }
 
+aspect {
+  pointcut: retstr
+  advice: {
+    before: {
+      fmt.Println("yo joe")
+    }
+  }
+}
+
+aspect {
+  pointcut: retbool
+  advice: {
+    before: {
+      fmt.Println("booooool")
+    }
+  }
+}
 
 aspect {
   pointcut: other/FuncMaster
