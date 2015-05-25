@@ -42,13 +42,13 @@ func (a *Aop) Run() {
 	a.loadAspects()
 	a.transform()
 
-	a.parseAST()
+	a.transformAST()
 
 	a.build()
 
 }
 
-func (a *Aop) parseAST() {
+func (a *Aop) transformAST() {
 	filepath.Walk(a.tmpLocation(), a.VisitFile)
 }
 
@@ -64,18 +64,19 @@ func (a *Aop) VisitFile(fp string, fi os.FileInfo, err error) error {
 
 		flines := fileLines(fp)
 
-		pf := a.Parse(fp, flines)
+		af := a.ParseAST(fp, flines)
 
-		pruned := pruneImports(pf.af)
+		pruned := pruneImports(af)
+		lines := a.deDupeImports(fp, flines, pruned)
 
-		lines := a.formatAST(fp, flines, pruned)
 		a.writeAST(fp, lines)
 	}
 
 	return nil
 }
 
-func (a *Aop) formatAST(path string, flines []string, pruned []string) string {
+// deDupeImports de-dupes imports
+func (a *Aop) deDupeImports(path string, flines []string, pruned []string) string {
 	nlines := ""
 
 	inImport := false
@@ -149,10 +150,6 @@ func inthere(p string, ray []string) bool {
 	return false
 }
 
-type goVar struct {
-	line int
-}
-
 // errorVar represents an error found in go src
 type errorVar struct {
 	human string
@@ -161,20 +158,12 @@ type errorVar struct {
 	blank bool
 }
 
-type ParsedFile struct {
-	vars []errorVar
-	gos  []goVar
-	af   *ast.File
-}
-
 // Parse parses the ast for this file and returns a ParsedFile
-func (a *Aop) Parse(fname string, flines []string) *ParsedFile {
+func (a *Aop) ParseAST(fname string, flines []string) *ast.File {
 	var err error
 
-	pf := &ParsedFile{}
-
 	fset := token.NewFileSet()
-	pf.af, err = parser.ParseFile(fset, fname, nil, 0)
+	af, err := parser.ParseFile(fset, fname, nil, 0)
 	if err != nil {
 		panic(err)
 	}
@@ -188,33 +177,35 @@ func (a *Aop) Parse(fname string, flines []string) *ParsedFile {
 	}
 
 	var conf types.Config
-	_, err = conf.Check(pf.af.Name.Name, fset, []*ast.File{pf.af}, &info)
+	_, err = conf.Check(af.Name.Name, fset, []*ast.File{af}, &info)
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	ast.Inspect(pf.af, func(n ast.Node) bool {
+	// http.HandleFunc("/panic", panicHandler)
+
+	ast.Inspect(af, func(n ast.Node) bool {
 		switch stmt := n.(type) {
+
+		// go statements
 		case *ast.GoStmt:
-			ln := fset.Position(stmt.Go).Line
+			//ln := fset.Position(stmt.Go).Line
 
-			gv := goVar{
-				line: ln,
-			}
-
-			pf.gos = append(pf.gos, gv)
-
+		// assignments
 		case *ast.AssignStmt:
 
 			for i := 0; i < len(stmt.Lhs); i++ {
 			}
 
+		case *ast.CallExpr:
+			fmt.Println("found call")
+			fmt.Println(stmt.Fun)
 		}
 
 		return true
 	})
 
-	return pf
+	return af
 }
 
 // buildDir determines what the root build dir is

@@ -378,20 +378,23 @@ else.
 
 ### TODO - shortlist before opening up
 
+  * AST re-writing -->
+    https://github.com/ncw/gotemplate/compare/ast-arguments
+    https://github.com/tsuna/gorewrite
+
   * need to be able to wrap a method
     (eg: http handler, eg: need some AST <3)
+    (calls...)
 
   * need to be able to modify a goroutine
     (need that AST <3 again)
+    (eg: panics.. inside goroutines)
 
   * better name
 
   * logo
 
   * split up file re-writing into something that we can test easily
-
-  * de-duping of imports
-    -- if multiple imports are added
 
   * partial function matching
 
