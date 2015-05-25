@@ -2,7 +2,6 @@ aspect {
   pointcut: main
   imports (
     "fmt"
-    "github.com/deferpanic/deferclient"
   )
   advice: {
     before: {

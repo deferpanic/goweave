@@ -13,6 +13,10 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
+
+	_ "golang.org/x/tools/go/gcimporter"
+	"golang.org/x/tools/go/loader"
+	"golang.org/x/tools/go/types"
 )
 
 // Aop is struct runner for aop transforms
@@ -37,48 +41,18 @@ func (a *Aop) Run() {
 	a.prep()
 	a.loadAspects()
 	a.transform()
-	a.build()
 
 	a.parseAST()
+
+	a.build()
+
 }
 
 func (a *Aop) parseAST() {
-	filepath.Walk(a.tmpLocation(), w.VisitFile)
-}
-
-// returns a slice of lines
-func fileLines(path string) []string {
-	stuff := []string{}
-
-	file, err := os.Open(path)
-
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	defer file.Close()
-
-	reader := bufio.NewReader(file)
-	scanner := bufio.NewScanner(reader)
-
-	for scanner.Scan() {
-		stuff = append(stuff, scanner.Text())
-	}
-
-	return stuff
+	filepath.Walk(a.tmpLocation(), a.VisitFile)
 }
 
 func (a *Aop) VisitFile(fp string, fi os.FileInfo, err error) error {
-	if err != nil {
-		fmt.Println(err)
-		return nil
-	}
-
-	// FIXME
-	if !!fi.IsDir() {
-		return nil
-	}
-
 	matched, err := filepath.Match("*.go", fi.Name())
 	if err != nil {
 		fmt.Println(err)
@@ -86,18 +60,115 @@ func (a *Aop) VisitFile(fp string, fi os.FileInfo, err error) error {
 	}
 
 	if matched {
-		fmt.Printf("found %s- parsing/re-writing\n", fp)
+		fmt.Println("looking at " + fp)
 
 		flines := fileLines(fp)
 
-		pf := w.Parse(fp, flines)
+		pf := a.Parse(fp, flines)
+
+		pruned := pruneImports(pf.af)
+
+		lines := a.formatAST(fp, flines, pruned)
+		a.writeAST(fp, lines)
 	}
 
 	return nil
 }
 
+func (a *Aop) formatAST(path string, flines []string, pruned []string) string {
+	nlines := ""
+
+	inImport := false
+
+	for i := 0; i < len(flines); i++ {
+
+		// see if we want to add any imports to the file
+		if strings.Contains(flines[i], "import (") {
+			inImport = true
+
+			nlines += flines[i]
+
+			for x := 0; x < len(pruned); x++ {
+				nlines += pruned[x] + "\n"
+			}
+
+			continue
+		}
+
+		if inImport {
+			if strings.Contains(flines[i], ")") {
+				inImport = false
+
+				nlines += ")" + "\n"
+			}
+
+			continue
+		}
+
+		// write out the original line
+		nlines += flines[i] + "\n"
+
+	}
+
+	return nlines
+}
+
+// Write writes nlines to path
+func (a *Aop) writeAST(path string, nlines string) {
+
+	b := []byte(nlines)
+	err := ioutil.WriteFile(path, b, 0644)
+	if err != nil {
+		log.Println(err)
+	}
+}
+
+// pruneImports
+func pruneImports(f *ast.File) []string {
+
+	pruned := []string{}
+
+	for i := 0; i < len(f.Imports); i++ {
+		if f.Imports[i].Path != nil {
+			if !inthere(f.Imports[i].Path.Value, pruned) {
+				pruned = append(pruned, f.Imports[i].Path.Value)
+			}
+		}
+	}
+
+	return pruned
+}
+
+func inthere(p string, ray []string) bool {
+	for i := 0; i < len(ray); i++ {
+		if ray[i] == p {
+			return true
+		}
+	}
+
+	return false
+}
+
+type goVar struct {
+	line int
+}
+
+// errorVar represents an error found in go src
+type errorVar struct {
+	human string
+	line  int
+	name  string
+	blank bool
+}
+
+type ParsedFile struct {
+	vars []errorVar
+	gos  []goVar
+	af   *ast.File
+}
+
 // Parse parses the ast for this file and returns a ParsedFile
-func (w *Wrapper) Parse(fname string, flines []string) *ParsedFile {
+func (a *Aop) Parse(fname string, flines []string) *ParsedFile {
 	var err error
 
 	pf := &ParsedFile{}
@@ -122,110 +193,26 @@ func (w *Wrapper) Parse(fname string, flines []string) *ParsedFile {
 		fmt.Println(err)
 	}
 
-	if w.verbosity {
-		fmt.Printf("found the following imports:\t%v\n", pf.af.Imports)
-	}
-
 	ast.Inspect(pf.af, func(n ast.Node) bool {
 		switch stmt := n.(type) {
 		case *ast.GoStmt:
 			ln := fset.Position(stmt.Go).Line
-			if w.Verbosity {
-				fmt.Printf("found a go statement on line %v\n", ln)
-			}
 
 			gv := goVar{
 				line: ln,
 			}
-
-			pf.containsDCNeed = true
 
 			pf.gos = append(pf.gos, gv)
 
 		case *ast.AssignStmt:
 
 			for i := 0; i < len(stmt.Lhs); i++ {
-
-				if call, ok := stmt.Lhs[i].(*ast.Ident); ok {
-
-					if w.Pmissingerrors {
-						if call.Name == "_" {
-							ln := fset.Position(call.NamePos).Line
-							if w.verbosity {
-								fmt.Println("found a blank ident")
-							}
-
-							ev := errorVar{
-								human: flines[ln-1],
-								line:  ln,
-								name:  call.Name,
-								blank: true,
-							}
-
-							pf.containsDLNeed = true
-
-							pf.vars = append(pf.vars, ev)
-						}
-					}
-
-					t := info.Types[call].Type
-					if t != nil && t.String() == "error" {
-						ln := fset.Position(call.NamePos).Line
-						ev := errorVar{
-							human: flines[ln-1],
-							line:  ln,
-							name:  call.Name,
-						}
-
-						if call.Name == "_" {
-							if w.verbosity {
-								fmt.Println("found a blank ident")
-							}
-
-							ev.blank = true
-						}
-
-						pf.containsDLNeed = true
-
-						pf.vars = append(pf.vars, ev)
-					}
-
-					d := info.Defs[call]
-
-					if d != nil && d.Type() != nil && d.Type().String() == "error" {
-						ln := fset.Position(call.NamePos).Line
-
-						ev := errorVar{
-							human: flines[ln-1],
-							line:  ln,
-							name:  call.Name,
-						}
-
-						if call.Name == "_" {
-							if w.verbosity {
-								fmt.Println("found a blank ident")
-							}
-
-							ev.blank = true
-						}
-
-						pf.containsDLNeed = true
-
-						pf.vars = append(pf.vars, ev)
-					}
-				}
 			}
 
 		}
 
 		return true
 	})
-
-	if w.Verbosity {
-		for i := 0; i < len(pf.vars); i++ {
-			fmt.Printf("L%v: %v\n", pf.vars[i].line, pf.vars[i].human)
-		}
-	}
 
 	return pf
 }
@@ -249,7 +236,6 @@ func (a *Aop) binName() string {
 
 // prep prepares any tmp. build dirs
 func (a *Aop) prep() {
-	fmt.Println("building" + a.tmpLocation())
 
 	fstcmd := "mkdir -p " + a.tmpLocation()
 	sndcmd := `find . -type d -exec mkdir -p "` + a.tmpLocation() + `/{}" \;`
@@ -259,7 +245,6 @@ func (a *Aop) prep() {
 		a.flog.Println(err.Error())
 	}
 
-	fmt.Println(sndcmd)
 	_, err = exec.Command("bash", "-c", sndcmd).CombinedOutput()
 	if err != nil {
 		a.flog.Println(err.Error())
@@ -289,7 +274,6 @@ func (a *Aop) build() {
 	buildstr := "cd " + a.tmpLocation() + " && " + a.whichGo() + " build && cp " +
 		a.binName() + " " + a.buildDir() + "/."
 
-	fmt.Println(buildstr)
 	o, err := exec.Command("bash", "-c", buildstr).CombinedOutput()
 	if err != nil {
 		a.flog.Println(string(o))
@@ -324,6 +308,28 @@ func pointCutMatch(a []Aspect, l string) Aspect {
 	}
 
 	return Aspect{}
+}
+
+// returns a slice of lines
+func fileLines(path string) []string {
+	stuff := []string{}
+
+	file, err := os.Open(path)
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	defer file.Close()
+
+	reader := bufio.NewReader(file)
+	scanner := bufio.NewScanner(reader)
+
+	for scanner.Scan() {
+		stuff = append(stuff, scanner.Text())
+	}
+
+	return stuff
 }
 
 // transform reads line by line over each src file and inserts advice
