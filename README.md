@@ -379,6 +379,7 @@ else.
 ### TODO - shortlist before opening up
 
   * AST re-writing -->
+    http://golang.org/src/cmd/gofmt/rewrite.go
     https://github.com/ncw/gotemplate/compare/ast-arguments
     https://github.com/tsuna/gorewrite
 

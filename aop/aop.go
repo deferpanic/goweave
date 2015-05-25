@@ -2,6 +2,7 @@ package aop
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -11,6 +12,7 @@ import (
 	"strings"
 
 	"go/ast"
+	"go/format"
 	"go/parser"
 	"go/token"
 
@@ -42,14 +44,41 @@ func (a *Aop) Run() {
 	a.loadAspects()
 	a.transform()
 
-	a.transformAST()
+	filepath.Walk(a.tmpLocation(), a.VisitFile)
 
 	a.build()
 
 }
 
-func (a *Aop) transformAST() {
-	filepath.Walk(a.tmpLocation(), a.VisitFile)
+func parseExpr(s string) ast.Expr {
+	exp, err := parser.ParseExpr(s)
+	if err != nil {
+		log.Println("Cannot parse expression %s :%s", s, err.Error())
+	}
+	return exp
+}
+
+func doshit(fname string, lines string) {
+	fset := token.NewFileSet()
+	file, err := parser.ParseFile(fset, fname, lines, parser.Mode(0))
+	if err != nil {
+		log.Println("Failed to parse source: %s", err.Error())
+	}
+
+	id := "A"
+	val := parseExpr("int")
+
+	file = rewriteFile(file, id, val)
+
+	buf := new(bytes.Buffer)
+	err = format.Node(buf, fset, file)
+	if err != nil {
+		log.Println("Failed to format post-replace source: %v", err)
+	}
+
+	actual := buf.String()
+	fmt.Println("doing shit")
+	fmt.Println(actual)
 }
 
 func (a *Aop) VisitFile(fp string, fi os.FileInfo, err error) error {
@@ -62,14 +91,14 @@ func (a *Aop) VisitFile(fp string, fi os.FileInfo, err error) error {
 	if matched {
 		fmt.Println("looking at " + fp)
 
+		af := a.ParseAST(fp)
+
 		flines := fileLines(fp)
-
-		af := a.ParseAST(fp, flines)
-
 		pruned := pruneImports(af)
 		lines := a.deDupeImports(fp, flines, pruned)
+		a.writeImports(fp, lines)
 
-		a.writeAST(fp, lines)
+		doshit(fp, lines)
 	}
 
 	return nil
@@ -114,8 +143,7 @@ func (a *Aop) deDupeImports(path string, flines []string, pruned []string) strin
 	return nlines
 }
 
-// Write writes nlines to path
-func (a *Aop) writeAST(path string, nlines string) {
+func (a *Aop) writeImports(path string, nlines string) {
 
 	b := []byte(nlines)
 	err := ioutil.WriteFile(path, b, 0644)
@@ -159,7 +187,7 @@ type errorVar struct {
 }
 
 // Parse parses the ast for this file and returns a ParsedFile
-func (a *Aop) ParseAST(fname string, flines []string) *ast.File {
+func (a *Aop) ParseAST(fname string) *ast.File {
 	var err error
 
 	fset := token.NewFileSet()
