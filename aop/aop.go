@@ -58,17 +58,22 @@ func parseExpr(s string) ast.Expr {
 	return exp
 }
 
-func doshit(fname string, lines string) {
+func doshit(fname string, lines string) string {
 	fset := token.NewFileSet()
 	file, err := parser.ParseFile(fset, fname, lines, parser.Mode(0))
 	if err != nil {
 		log.Println("Failed to parse source: %s", err.Error())
 	}
 
-	id := "A"
-	val := parseExpr("int")
+	// needs match groups
+	p := parseExpr("http.HandleFunc(\"/panic\", panicHandler)")
+	val := parseExpr("http.HandleFunc(\"/panic\", dps.HTTPHandler(panicHandler))")
 
-	file = rewriteFile(file, id, val)
+	// converts bob() to sally(bob())
+	// p := parseExpr("bob()")
+	// val := parseExpr("sally(bob())")
+
+	file = rewriteFile2(p, val, file)
 
 	buf := new(bytes.Buffer)
 	err = format.Node(buf, fset, file)
@@ -79,6 +84,8 @@ func doshit(fname string, lines string) {
 	actual := buf.String()
 	fmt.Println("doing shit")
 	fmt.Println(actual)
+
+	return actual
 }
 
 func (a *Aop) VisitFile(fp string, fi os.FileInfo, err error) error {
@@ -96,9 +103,11 @@ func (a *Aop) VisitFile(fp string, fi os.FileInfo, err error) error {
 		flines := fileLines(fp)
 		pruned := pruneImports(af)
 		lines := a.deDupeImports(fp, flines, pruned)
-		a.writeImports(fp, lines)
 
-		doshit(fp, lines)
+		stuff := doshit(fp, lines)
+
+		a.writeImports(fp, stuff)
+
 	}
 
 	return nil

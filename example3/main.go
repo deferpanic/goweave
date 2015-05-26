@@ -4,15 +4,14 @@ import (
 	"fmt"
 )
 
-func beforeBob() {
-	fmt.Println("before")
+func sally(i int) int {
+	return i * 2
 }
 
-func Add(a, b A) A {
-	var sum A = a + b
-	return sum
+func bob() int {
+	return 1
 }
 
 func main() {
-	fmt.Println("test of the microphone")
+	fmt.Println(bob())
 }

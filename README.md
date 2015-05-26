@@ -378,6 +378,9 @@ else.
 
 ### TODO - shortlist before opening up
 
+  * https://groups.google.com/forum/#!topic/golang-nuts/TiRX4HcdZMw
+  * https://github.com/skelterjohn/gorf
+
   * AST re-writing -->
     http://golang.org/src/cmd/gofmt/rewrite.go
     https://github.com/ncw/gotemplate/compare/ast-arguments
