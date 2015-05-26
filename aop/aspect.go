@@ -1,6 +1,7 @@
 package aop
 
 import (
+	"fmt"
 	"io/ioutil"
 	"strings"
 )
@@ -75,6 +76,7 @@ func (a *Aop) parseAdvice(body string) Advice {
 
 	a4t := ""
 	b4t := ""
+	ar4t := ""
 
 	bbrace := strings.Split(advize, "before: {")
 	if len(bbrace) > 1 {
@@ -108,9 +110,17 @@ func (a *Aop) parseAdvice(body string) Advice {
 		a4t = strings.TrimSpace(a4)
 	}
 
+	arbrace := strings.Split(advize, "around: {")
+	if len(arbrace) > 1 {
+		a.flog.Println("grabbing around")
+		ar4 := strings.Split(arbrace[1], "}")[0]
+		ar4t = strings.TrimSpace(ar4)
+	}
+
 	return Advice{
 		before: b4t,
 		after:  a4t,
+		around: ar4t,
 	}
 
 }
@@ -137,6 +147,9 @@ func (a *Aop) parseAspectFile(body string) {
 		azpect.importz = a.parseImports(aspect)
 
 		azpect.advize = a.parseAdvice(aspect)
+
+		fmt.Println("advice size")
+		fmt.Println(len(results))
 
 		results = append(results, azpect)
 

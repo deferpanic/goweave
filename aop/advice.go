@@ -9,6 +9,7 @@ import (
 type Advice struct {
 	before string
 	after  string
+	around string
 
 	adviceTypeId int
 }

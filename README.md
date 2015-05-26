@@ -63,6 +63,9 @@ simply replace with
   * tracing
     (ex: print out the value of this variable in a pkg)
 
+  * dealing with legacy code
+    (ex: overriding a method/API w/minimum of work)
+
 ### Examples:
 
 The example folder has some examples you might wish to look at.
@@ -159,6 +162,11 @@ not going to stay the same - it will be improved in the future.
     ```go
       some.stuff()
       fmt.Println("before")
+    ```
+
+    around:
+    ```
+      somewrapper(some.stuff())
     ```
 
     -- method execution (what we are doing right now)
@@ -314,6 +322,10 @@ behind this.
   I don't intend for this codebase to live on regexen forever. It's more
 of a POC while the business logic gets sorted out.
 
+* why not go fmt?
+
+  http://research.swtch.com/gofmt
+
 * Why not AST?
   I think we want to move all the regexen to AST. This started out as a
 POC and I wanted functionality first.
@@ -425,6 +437,8 @@ else.
 
 * cross file
   -- test?
+
+* annotations??
 
 * Faster
 

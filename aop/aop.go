@@ -58,34 +58,48 @@ func parseExpr(s string) ast.Expr {
 	return exp
 }
 
-func doshit(fname string, lines string) string {
-	fset := token.NewFileSet()
-	file, err := parser.ParseFile(fset, fname, lines, parser.Mode(0))
-	if err != nil {
-		log.Println("Failed to parse source: %s", err.Error())
+// txAfter uses code from gofmt to wrap any after advice
+// essentially this is the same stuff you could do w/the cmdline tool,
+// gofmt
+func (a *Aop) txAfter(fname string, lines string) string {
+
+	stuff := lines
+
+	for i := 0; i < len(a.aspects); i++ {
+		aspect := a.aspects[i]
+		if aspect.advize.around != "" {
+			pk := aspect.pointkut
+			around_advice := aspect.advize.around
+
+			fset := token.NewFileSet()
+			file, err := parser.ParseFile(fset, fname, lines, parser.Mode(0))
+			if err != nil {
+				log.Println("Failed to parse source: %s", err.Error())
+			}
+
+			// needs match groups
+			// wildcards of d,s...etc.
+			p := parseExpr(pk.def)
+			val := parseExpr(around_advice)
+
+			file = rewriteFile2(p, val, file)
+
+			buf := new(bytes.Buffer)
+			err = format.Node(buf, fset, file)
+			if err != nil {
+				log.Println("Failed to format post-replace source: %v", err)
+			}
+
+			actual := buf.String()
+			fmt.Println(actual)
+
+			a.writeImports(fname, actual)
+
+			stuff = actual
+		}
 	}
 
-	// needs match groups
-	p := parseExpr("http.HandleFunc(\"/panic\", panicHandler)")
-	val := parseExpr("http.HandleFunc(\"/panic\", dps.HTTPHandler(panicHandler))")
-
-	// converts bob() to sally(bob())
-	// p := parseExpr("bob()")
-	// val := parseExpr("sally(bob())")
-
-	file = rewriteFile2(p, val, file)
-
-	buf := new(bytes.Buffer)
-	err = format.Node(buf, fset, file)
-	if err != nil {
-		log.Println("Failed to format post-replace source: %v", err)
-	}
-
-	actual := buf.String()
-	fmt.Println("doing shit")
-	fmt.Println(actual)
-
-	return actual
+	return stuff
 }
 
 func (a *Aop) VisitFile(fp string, fi os.FileInfo, err error) error {
@@ -104,7 +118,7 @@ func (a *Aop) VisitFile(fp string, fi os.FileInfo, err error) error {
 		pruned := pruneImports(af)
 		lines := a.deDupeImports(fp, flines, pruned)
 
-		stuff := doshit(fp, lines)
+		stuff := a.txAfter(fp, lines)
 
 		a.writeImports(fp, stuff)
 
@@ -219,8 +233,6 @@ func (a *Aop) ParseAST(fname string) *ast.File {
 		fmt.Println(err)
 	}
 
-	// http.HandleFunc("/panic", panicHandler)
-
 	ast.Inspect(af, func(n ast.Node) bool {
 		switch stmt := n.(type) {
 
@@ -235,8 +247,8 @@ func (a *Aop) ParseAST(fname string) *ast.File {
 			}
 
 		case *ast.CallExpr:
-			fmt.Println("found call")
-			fmt.Println(stmt.Fun)
+			//fmt.Println("found call")
+			//fmt.Println(stmt.Fun)
 		}
 
 		return true
@@ -362,6 +374,8 @@ func fileLines(path string) []string {
 
 // transform reads line by line over each src file and inserts advice
 // where appropriate
+//
+// only inserts before/advice after
 func (a *Aop) transform() {
 
 	fzs := a.findGoFiles()
