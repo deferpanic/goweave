@@ -92,7 +92,7 @@ func (a *Aop) txAfter(fname string, lines string) string {
 
 			actual := buf.String()
 
-			a.writeImports(fname, actual)
+			a.writeOut(fname, actual)
 
 			stuff = actual
 		}
@@ -119,7 +119,7 @@ func (a *Aop) VisitFile(fp string, fi os.FileInfo, err error) error {
 
 		stuff := a.txAfter(fp, lines)
 
-		a.writeImports(fp, stuff)
+		a.writeOut(fp, stuff)
 
 	}
 
@@ -165,7 +165,8 @@ func (a *Aop) deDupeImports(path string, flines []string, pruned []string) strin
 	return nlines
 }
 
-func (a *Aop) writeImports(path string, nlines string) {
+// writeOut writes nlines to path
+func (a *Aop) writeOut(path string, nlines string) {
 
 	b := []byte(nlines)
 	err := ioutil.WriteFile(path, b, 0644)
@@ -200,14 +201,6 @@ func inthere(p string, ray []string) bool {
 	return false
 }
 
-// errorVar represents an error found in go src
-type errorVar struct {
-	human string
-	line  int
-	name  string
-	blank bool
-}
-
 // Parse parses the ast for this file and returns a ParsedFile
 func (a *Aop) ParseAST(fname string) *ast.File {
 	var err error
@@ -231,27 +224,6 @@ func (a *Aop) ParseAST(fname string) *ast.File {
 	if err != nil {
 		fmt.Println(err)
 	}
-
-	ast.Inspect(af, func(n ast.Node) bool {
-		switch stmt := n.(type) {
-
-		// go statements
-		case *ast.GoStmt:
-			//ln := fset.Position(stmt.Go).Line
-
-		// assignments
-		case *ast.AssignStmt:
-
-			for i := 0; i < len(stmt.Lhs); i++ {
-			}
-
-		case *ast.CallExpr:
-			//fmt.Println("found call")
-			//fmt.Println(stmt.Fun)
-		}
-
-		return true
-	})
 
 	return af
 }

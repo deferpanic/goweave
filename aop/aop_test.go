@@ -23,7 +23,7 @@ func main() {
 `
 	aop := &Aop{}
 
-	aop.writeImports("/tmp/blah", f1)
+	aop.writeOut("/tmp/blah", f1)
 
 	aspect := Aspect{
 		advize: Advice{

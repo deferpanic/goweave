@@ -326,6 +326,10 @@ of a POC while the business logic gets sorted out.
 
   http://research.swtch.com/gofmt
 
+  ```go
+  gofmt -r 'bytes.Compare(a, b) == 0 -> bytes.Equal(a, b)'
+  ```
+
 * Why not AST?
   I think we want to move all the regexen to AST. This started out as a
 POC and I wanted functionality first.
@@ -393,14 +397,13 @@ else.
   * https://groups.google.com/forum/#!topic/golang-nuts/TiRX4HcdZMw
   * https://github.com/skelterjohn/gorf
 
+  * gofmt code 
+    - russ or robert?
+
   * AST re-writing -->
     http://golang.org/src/cmd/gofmt/rewrite.go
     https://github.com/ncw/gotemplate/compare/ast-arguments
     https://github.com/tsuna/gorewrite
-
-  * need to be able to wrap a method
-    (eg: http handler, eg: need some AST <3)
-    (calls...)
 
   * need to be able to modify a goroutine
     (need that AST <3 again)
