@@ -1,7 +1,6 @@
 package aop
 
 import (
-	"fmt"
 	"io/ioutil"
 	"strings"
 )
@@ -147,9 +146,6 @@ func (a *Aop) parseAspectFile(body string) {
 		azpect.importz = a.parseImports(aspect)
 
 		azpect.advize = a.parseAdvice(aspect)
-
-		fmt.Println("advice size")
-		fmt.Println(len(results))
 
 		results = append(results, azpect)
 

@@ -91,7 +91,6 @@ func (a *Aop) txAfter(fname string, lines string) string {
 			}
 
 			actual := buf.String()
-			fmt.Println(actual)
 
 			a.writeImports(fname, actual)
 
@@ -330,20 +329,6 @@ func pointCutMatch(a []Aspect, l string) Aspect {
 		if strings.Contains(l, "func "+a[i].pointkut.def) {
 			return a[i]
 		}
-
-		// look for partial function match
-		// beforeBob
-
-		// look for function declarations
-		// (w http.ResponseWriter, r *http.Request)
-		//if strings.Contains(l, a[i].pointkut.def) {
-		//	return a[i]
-		//}
-
-		// look for package/function
-		//if strings.Contains(l, "func "+a[i].pointkut.def) {
-		//		return a[i]
-		//	}
 
 	}
 
