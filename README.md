@@ -75,6 +75,8 @@ your project we should be able to provide aspect coverage for it.
 There are a few design decisions that need to be made to support across
 projects && into stdlib. Stdlib probably won't come until we move to IR.
 
+To try things out first try running `go build`. Then try running `goa`.
+
 #### Before Main
 
 ```go
@@ -140,6 +142,13 @@ not going to stay the same - it will be improved in the future.
 ## What is AOP !??
 
   [Aspect oriented programming](http://docs.jboss.org/aop/1.1/aspect-framework/userguide/en/html/what.html)
+
+  in short - we are a pre-processor
+
+  tools existing:
+    gofmt - rename api defs on the fly
+    gofix - ???
+    https://blog.golang.org/cover
 
 ### Definitions:
 
@@ -294,6 +303,10 @@ an extension of that work.
 The name sucks - suggest a new one.
 
 ### Why!??!
+
+"Which is our fulltime job, write a program to write a program"
+  - rob pike
+
 We came to go to get away from java!! What's the matter with you!?
 
 I agree this concept can and has been abused in the past. However, being
@@ -394,6 +407,16 @@ else.
 
 ### TODO - shortlist before opening up
 
+  * better name
+
+  * logo
+
+  * need to be able to modify a goroutine
+    (need that AST <3 again)
+    (eg: panics.. inside goroutines)
+
+### random thoughts
+
   * https://groups.google.com/forum/#!topic/golang-nuts/TiRX4HcdZMw
   * https://github.com/skelterjohn/gorf
 
@@ -405,19 +428,13 @@ else.
     https://github.com/ncw/gotemplate/compare/ast-arguments
     https://github.com/tsuna/gorewrite
 
-  * need to be able to modify a goroutine
-    (need that AST <3 again)
-    (eg: panics.. inside goroutines)
-
-  * better name
-
-  * logo
-
   * split up file re-writing into something that we can test easily
 
   * partial function matching
 
 ### TODO
+
+* import vendoring/re-writing
 
 * inner vs. outer cutpoints
   - tha fuck?

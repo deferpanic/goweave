@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"go/ast"
@@ -302,9 +303,33 @@ func pointCutMatch(a []Aspect, l string) Aspect {
 			return a[i]
 		}
 
+		// look for go-routines
+		if strings.Contains(l, "go ") && ("go" == a[i].pointkut.def) {
+			return a[i]
+		}
+
 	}
 
 	return Aspect{}
+}
+
+// returns true if this is a multi-line go routine
+func multiLineGo(l string) bool {
+	if strings.Contains(l, "go func()") {
+		return true
+	}
+
+	return false
+}
+
+// returns true if this is a single line go routine
+func singleLineGo(l string) bool {
+	var singlelinego = regexp.MustCompile(`go\s.*\(.*\)`)
+	if singlelinego.MatchString(l) {
+		return true
+	}
+
+	return false
 }
 
 // returns a slice of lines
@@ -393,9 +418,35 @@ func (a *Aop) transform() {
 
 				cur_aspect = newAspect
 
-				// before advice
 				if cur_aspect.advize.before != "" {
-					out += l + "\n" + cur_aspect.advize.before + "\n"
+
+					// go before advice
+					if cur_aspect.pointkut.def == "go" {
+						if singleLineGo(l) {
+							fmt.Println("found a single line go")
+
+							// hack - ASTize me
+							r := regexp.MustCompile("go\\s(.*)\\((.*)\\)")
+							newstr := r.ReplaceAllString(l, "go func(){\n"+
+								cur_aspect.advize.before+"\n$1($2)\n"+"}()")
+
+							out += newstr + "\n"
+
+						} else if multiLineGo(l) {
+
+							// hack - ASTize me
+							r := regexp.MustCompile(".*")
+							newstr := r.ReplaceAllString(l, "go func(){\n"+
+								cur_aspect.advize.before+"\n")
+
+							out += newstr + "\n"
+
+						}
+					} else {
+						// normal before advice
+						out += l + "\n" + cur_aspect.advize.before + "\n"
+					}
+
 					continue
 				}
 

@@ -2,16 +2,21 @@ package main
 
 import (
 	"fmt"
+	"time"
 )
 
-func sally(i int) int {
-	return i * 2
+func stuff() {
+	panic("panic")
 }
 
-func bob() int {
-	return 1
+func blah() {
+	stuff()
+	fmt.Println("never get here")
 }
 
 func main() {
-	fmt.Println(bob())
+
+	go blah()
+
+	time.Sleep(1 * time.Second)
 }
