@@ -17,7 +17,7 @@ aspect {
   pointcut: http.HandleFunc(d, s)
   advice: {
     around: {
-      http.HandleFunc(d, dps.HTTPHandler(s))
+      http.HandleFunc(d, dps.HTTPHandlerFunc(s))
     }
   }
 }

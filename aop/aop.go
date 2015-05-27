@@ -315,7 +315,7 @@ func pointCutMatch(a []Aspect, l string) Aspect {
 
 // returns true if this is a multi-line go routine
 func multiLineGo(l string) bool {
-	if strings.Contains(l, "go func()") {
+	if strings.Contains(l, "go func(") {
 		return true
 	}
 
@@ -422,22 +422,46 @@ func (a *Aop) transform() {
 
 					// go before advice
 					if cur_aspect.pointkut.def == "go" {
-						if singleLineGo(l) {
+						if multiLineGo(l) {
+							fmt.Println("multi line go")
+
+							// keep grabbing lines until we are back to
+							// existing scope?
+							stuff := ""
+							nscope := 1
+							for i := 0; ; i++ {
+								scanner.Scan()
+								l2 := scanner.Text()
+
+								fmt.Println(l2)
+
+								if strings.Contains(l2, "{") {
+									nscope += 1
+								}
+
+								if strings.Contains(l2, "}") {
+									nscope -= 1
+								}
+
+								if nscope == 0 {
+									break
+								}
+
+								stuff += l2 + "\n"
+
+							}
+
+							out += "go func(){\n" + cur_aspect.advize.before + "\n" + stuff +
+								"\n" + "}()\n"
+
+						} else if singleLineGo(l) {
 							fmt.Println("found a single line go")
 
 							// hack - ASTize me
 							r := regexp.MustCompile("go\\s(.*)\\((.*)\\)")
+
 							newstr := r.ReplaceAllString(l, "go func(){\n"+
 								cur_aspect.advize.before+"\n$1($2)\n"+"}()")
-
-							out += newstr + "\n"
-
-						} else if multiLineGo(l) {
-
-							// hack - ASTize me
-							r := regexp.MustCompile(".*")
-							newstr := r.ReplaceAllString(l, "go func(){\n"+
-								cur_aspect.advize.before+"\n")
 
 							out += newstr + "\n"
 
