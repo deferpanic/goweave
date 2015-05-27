@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/deferpanic/goa/example/other"
+	"github.com/deferpanic/gocut/example/other"
 )
 
 func beforeBob() {

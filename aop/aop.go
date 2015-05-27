@@ -423,7 +423,6 @@ func (a *Aop) transform() {
 					// go before advice
 					if cur_aspect.pointkut.def == "go" {
 						if multiLineGo(l) {
-							fmt.Println("multi line go")
 
 							// keep grabbing lines until we are back to
 							// existing scope?
@@ -455,7 +454,6 @@ func (a *Aop) transform() {
 								"\n" + "}()\n"
 
 						} else if singleLineGo(l) {
-							fmt.Println("found a single line go")
 
 							// hack - ASTize me
 							r := regexp.MustCompile("go\\s(.*)\\((.*)\\)")
@@ -585,7 +583,7 @@ func (a *Aop) findAspects() []string {
 
 	files, _ := ioutil.ReadDir("./")
 	for _, f := range files {
-		if strings.Contains(f.Name(), ".goa") {
+		if strings.Contains(f.Name(), ".gocut") {
 			aspects = append(aspects, f.Name())
 			fmt.Println(f.Name())
 		}

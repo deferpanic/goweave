@@ -3,23 +3,23 @@
 
 ### TOC
 
-  [Usage](https://github.com/deferpanic/goa#usage)
+  [Usage](https://github.com/deferpanic/gocut#usage)
 
-  [Examples](https://github.com/deferpanic/goa#examples)
+  [Examples](https://github.com/deferpanic/gocut#examples)
 
-  [What is AOP](https://github.com/deferpanic/goa#what_is_aop)
+  [What is AOP](https://github.com/deferpanic/gocut#what_is_aop)
 
-  [Why](https://github.com/deferpanic/goa#why)
+  [Why](https://github.com/deferpanic/gocut#why)
 
-  [FAQ](https://github.com/deferpanic/goa#faq)
+  [FAQ](https://github.com/deferpanic/gocut#faq)
 
-  [Goals](https://github.com/deferpanic/goa#goals)
+  [gocutls](https://github.com/deferpanic/gocut#gocutls)
 
-  [Help](https://github.com/deferpanic/goa#help)
+  [Help](https://github.com/deferpanic/gocut#help)
 
-  [Todo](https://github.com/deferpanic/goa#todo)
+  [Todo](https://github.com/deferpanic/gocut#todo)
 
-  [Roadmap](https://github.com/deferpanic/goa#roadmap)
+  [Roadmap](https://github.com/deferpanic/gocut#roadmap)
 
 ### Usage:
 
@@ -32,7 +32,7 @@ Where you might use
 simply replace with
 
 ```go
-  goa
+  gocut
 ```
 
 ### Use Cases
@@ -75,7 +75,7 @@ your project we should be able to provide aspect coverage for it.
 There are a few design decisions that need to be made to support across
 projects && into stdlib. Stdlib probably won't come until we move to IR.
 
-To try things out first try running `go build`. Then try running `goa`.
+To try things out first try running `go build`. Then try running `gocut`.
 
 #### Before Main
 
@@ -137,7 +137,7 @@ not going to stay the same - it will be improved in the future.
 
   I apologize for giving you the forks to stab your collective eyes out.
 
-  I think a good goal to have is to make it as proper go as possible. Suggestions welcome.
+  I think a good gocutl to have is to make it as proper go as possible. Suggestions welcome.
 
 ## What is AOP !??
 
@@ -224,7 +224,7 @@ request if so.
 
   * advice - behavior to apply
 
-  * aspect - a .goa file - file that contains our behavior
+  * aspect - a .gocut file - file that contains our behavior
 
 ### Aspects:
 
@@ -310,7 +310,7 @@ I was going to name this the flaming neckbeard in honor of those who
 after seeing this code or hearing about it would have their respective
 beards spontaneously combust into flame.
 
-Instead I named it after Goa, India where I went to relax after
+Instead I named it after gocut, India where I went to relax after
 GopherCon India back in February and hacked out deprehend. I see it as
 an extension of that work.
 
@@ -321,18 +321,20 @@ The name sucks - suggest a new one.
 "Which is our fulltime job, write a program to write a program"
   - rob pike
 
-We came to go to get away from java!! What's the matter with you!?
+The critics yell red in the face - "We came to go to get away from enterprise java!!
+What the hell is the matter with you!?"
 
-I agree this concept can and has been abused in the past. However, being
-able to do some of the things you can do with this is just way too
-conveinent.
+I agree this concept can and has been abused in the past.
 
-I'm definitely not a code purist - to me coding is a tool first and
+However, I'm definitely not a code purist - to me coding is a tool first and
 foremost.
 
 I simply wanted an easy way to attach common bits of code to large
-existing codebases without lifting a finger. That is the rationale
-behind this.
+existing codebases without having to hack it in each time to each
+different codebase. I also needed the ability to do this on large
+projects without modifying the source.
+
+That is the rationale behind this.
 
 ### Goals
 
@@ -345,16 +347,18 @@ behind this.
 
 * no code modifications - my main use cases involve *not* modifying code
   so that is why we initially did not support annotations - I'm not
-  opposed to adding these but that's not my intended goal
+  opposed to adding these but that's not my intended gocutl
 
 ### FAQ
 
-* why Not go generate?
+* Why not go generate?
 
   I don't intend for this codebase to live on regexen forever. It's more
 of a POC while the business logic gets sorted out.
 
 * why not go fmt?
+
+  We actually use go fmt code for the around conditions.
 
   http://research.swtch.com/gofmt
 
@@ -362,9 +366,9 @@ of a POC while the business logic gets sorted out.
   gofmt -r 'bytes.Compare(a, b) == 0 -> bytes.Equal(a, b)'
   ```
 
-* Why not AST?
+* Why not do everything via the AST?
   I think we want to move all the regexen to AST. This started out as a
-POC and I wanted functionality first.
+POC and I wanted functionality first - correctness comes after.
 
 * What about IR generation?
   This is probably the next step in the chain after converting most of
@@ -385,7 +389,7 @@ sprinkle some fmt.Println everywhere) you don't want that in your
 production code. It's much better to apply it when necessary in your
 binary, fix the problem and go - there is no need to code it in, then
 hack it back out (and potentially miss some). It's *much* cleaner this
-way.
+way and it's *much* faster.
 
   2) The original reason we did this was over at DeferPanic we had many
 requests from people wanting to use our code to automatically insert
@@ -396,10 +400,10 @@ didn't want the code inside their codebase - just available to them at
 runtime.
 
   3) I'd like the ability to turn on/off the behavior at will *and* not
-have to re-code it for every project. I think this is where AOP really
+have to re-code it for every project. I think this is where this really
 shines.
 
-* Are you all insane? This is go heresey!!
+* Are you all insane? This is go heresey!! Burn them at the stake!
   :) No, we are practioners of the "get-shit-done" philosophy. Ergo, we
 don't care about philosophy of programming, nor do we care about other
 armchair concerns. We only care about - how fast can I get this done?
@@ -412,7 +416,7 @@ style of programming allows us to do that.
 
 ### What You Should Know Before Using
 
-This is *alpha* software. It's more of an idea right now than anything
+This is *alpha* software - at best. It's more of an idea right now than anything
 else.
 
 * Expect the grammars {aspects, pointcuts} to change.
@@ -420,19 +424,19 @@ else.
 * This is currently *much* slower compared to native go build. Expect that to
   change but right now it's slow.
 
-* Expect the build system to change soon.
+* Expect the build system to change soon. It's slow and crap.
 
 * This *might* eat your cat - watch out.
 
 ### TODO - shortlist before opening up
-
-  * better name
 
   * logo
 
   * need to be able to modify a goroutine
     (need that AST <3 again)
     (eg: panics.. inside goroutines)
+
+  * break apart large tests into units
 
 ### random thoughts
 
