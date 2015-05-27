@@ -1,4 +1,4 @@
-# goa
+# gocut
   Aspect Oriented Programming for Go
 
 ### TOC
@@ -143,14 +143,28 @@ not going to stay the same - it will be improved in the future.
 
   [Aspect oriented programming](http://docs.jboss.org/aop/1.1/aspect-framework/userguide/en/html/what.html)
 
-  in short - we are a pre-processor
+  in short - we are a pre-processor that generates code defined to a
+gocut file
 
   tools existing:
-    gofmt - rename api defs on the fly
-    gofix - ???
-    https://blog.golang.org/cover
+    go fmt:
+      This is actually used for around advice. It allows you to wrap
+methods.
+
+    go fix:
+
+    go cover:
+      This is used to provide code coverage and has similar properties
+to what we want.
+
+    go generate:
+      We are generating code but we are looking for more extensive code
+generation.
 
 ### Definitions:
+
+  I might have gotten some of the terminology wrong here - open a pull
+request if so.
 
   * join point - places you can apply behavior
     -- method call
@@ -323,10 +337,15 @@ behind this.
 ### Goals
 
 * fast - obviously there will always be greater overhead than just
-  running go build but we don't want this to be obscene
+  running go build but we don't want this to be obscene - right now it's
+  a little obscene
 
 * correct - it goes w/out saying this is highly important to be as
   correct as possible w/our code generation
+
+* no code modifications - my main use cases involve *not* modifying code
+  so that is why we initially did not support annotations - I'm not
+  opposed to adding these but that's not my intended goal
 
 ### FAQ
 
@@ -432,7 +451,12 @@ else.
 
   * partial function matching
 
-### TODO
+### TODO - a.k.a. - Known Suckiness
+
+* multi-pass parsing
+  - this should ideally be a single pass
+  - most of the regex/line scanning should be converted to AST node
+    replacement
 
 * import vendoring/re-writing
 
