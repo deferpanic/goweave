@@ -70,6 +70,9 @@ simply replace with
   * dealing with legacy code
     (ex: overriding a method/API w/minimum of work)
 
+  * static validation
+    (ex: not closing a file when opened for example)
+
 ### Examples:
 
 The example folder has some examples you might wish to look at.
@@ -437,6 +440,8 @@ else.
   * example of matching functions
     -- right now we simply re-write functions ala, gofmt for around advice
       matching on regex..
+
+    -- we want to be able to do a fn declaration match..
 
   * logo
 

@@ -365,146 +365,157 @@ func (a *Aop) transform() {
 	rootpkg := a.rootPkg()
 
 	for i := 0; i < len(fzs); i++ {
-		curfile := fzs[i]
-		importsNeeded := []string{}
+		out, imports := a.txAspects(fzs[i], rootpkg)
+		a.reWriteFile(fzs[i], out, imports)
+	}
+}
 
-		file, err := os.Open(curfile)
-		if err != nil {
-			a.flog.Println(err)
+// txAspects reformats the curfile && returns the new out &&
+// importsNeeded
+func (a *Aop) txAspects(curfile string, rootpkg string) (string, []string) {
+	importsNeeded := []string{}
+
+	file, err := os.Open(curfile)
+	if err != nil {
+		a.flog.Println(err)
+	}
+	defer file.Close()
+
+	out := ""
+
+	// poor man's scope
+	scope := 0
+
+	// poor man's import parsing
+	inImport := false
+
+	cur_aspect := Aspect{}
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		l := scanner.Text()
+
+		// fix me - we can get these from the AST
+		if a.importBlock(l) || inImport {
+			inImport = true
+
+			if strings.Contains(l, "\"") {
+
+				if strings.Contains(l, rootpkg) {
+					l = a.rewriteImport(l, rootpkg)
+				}
+			}
 		}
-		defer file.Close()
 
-		out := ""
+		// close us out of import block if we are done
+		if inImport {
+			if strings.Contains(l, ")") {
+				inImport = false
+			}
+		}
 
-		// poor man's scope
-		scope := 0
+		newAspect := pointCutMatch(a.aspects, l)
+		if newAspect.pointkut.def != "" {
+			scope += 1
 
-		// poor man's import parsing
-		inImport := false
-
-		cur_aspect := Aspect{}
-
-		scanner := bufio.NewScanner(file)
-		for scanner.Scan() {
-			l := scanner.Text()
-
-			// fix me - we can get these from the AST
-			if a.importBlock(l) || inImport {
-				inImport = true
-
-				if strings.Contains(l, "\"") {
-
-					if strings.Contains(l, rootpkg) {
-						l = a.rewriteImport(l, rootpkg)
-					}
-				}
+			// insert any imports we need to
+			for x := 0; x < len(newAspect.importz); x++ {
+				importsNeeded = append(importsNeeded, newAspect.importz[x])
 			}
 
-			// close us out of import block if we are done
-			if inImport {
-				if strings.Contains(l, ")") {
-					inImport = false
-				}
-			}
+			cur_aspect = newAspect
 
-			newAspect := pointCutMatch(a.aspects, l)
-			if newAspect.pointkut.def != "" {
-				scope += 1
+			if cur_aspect.advize.before != "" {
 
-				// insert any imports we need to
-				for x := 0; x < len(newAspect.importz); x++ {
-					importsNeeded = append(importsNeeded, newAspect.importz[x])
-				}
+				// go before advice
+				if cur_aspect.pointkut.def == "go" {
+					if multiLineGo(l) {
 
-				cur_aspect = newAspect
+						// keep grabbing lines until we are back to
+						// existing scope?
+						stuff := ""
+						nscope := 1
+						for i := 0; ; i++ {
+							scanner.Scan()
+							l2 := scanner.Text()
 
-				if cur_aspect.advize.before != "" {
+							fmt.Println(l2)
 
-					// go before advice
-					if cur_aspect.pointkut.def == "go" {
-						if multiLineGo(l) {
-
-							// keep grabbing lines until we are back to
-							// existing scope?
-							stuff := ""
-							nscope := 1
-							for i := 0; ; i++ {
-								scanner.Scan()
-								l2 := scanner.Text()
-
-								fmt.Println(l2)
-
-								if strings.Contains(l2, "{") {
-									nscope += 1
-								}
-
-								if strings.Contains(l2, "}") {
-									nscope -= 1
-								}
-
-								if nscope == 0 {
-									break
-								}
-
-								stuff += l2 + "\n"
-
+							if strings.Contains(l2, "{") {
+								nscope += 1
 							}
 
-							out += "go func(){\n" + cur_aspect.advize.before + "\n" + stuff +
-								"\n" + "}()\n"
+							if strings.Contains(l2, "}") {
+								nscope -= 1
+							}
 
-						} else if singleLineGo(l) {
+							if nscope == 0 {
+								break
+							}
 
-							// hack - ASTize me
-							r := regexp.MustCompile("go\\s(.*)\\((.*)\\)")
-
-							newstr := r.ReplaceAllString(l, "go func(){\n"+
-								cur_aspect.advize.before+"\n$1($2)\n"+"}()")
-
-							out += newstr + "\n"
+							stuff += l2 + "\n"
 
 						}
-					} else {
-						// normal before advice
-						out += l + "\n" + cur_aspect.advize.before + "\n"
-					}
 
-					continue
+						out += "go func(){\n" + cur_aspect.advize.before + "\n" + stuff +
+							"\n" + "}()\n"
+
+					} else if singleLineGo(l) {
+
+						// hack - ASTize me
+						r := regexp.MustCompile("go\\s(.*)\\((.*)\\)")
+
+						newstr := r.ReplaceAllString(l, "go func(){\n"+
+							cur_aspect.advize.before+"\n$1($2)\n"+"}()")
+
+						out += newstr + "\n"
+
+					}
+				} else {
+					// normal before advice
+					out += l + "\n" + cur_aspect.advize.before + "\n"
 				}
 
+				continue
 			}
 
-			// dat scope
-			if strings.Contains(l, "}") || strings.Contains(l, "return") {
-
-				scope -= 1
-
-				out += cur_aspect.advize.after + "\n"
-			}
-
-			out += l + "\n"
-
 		}
 
-		if err := scanner.Err(); err != nil {
-			a.flog.Println(err)
+		// dat scope
+		if strings.Contains(l, "}") || strings.Contains(l, "return") {
+
+			scope -= 1
+
+			out += cur_aspect.advize.after + "\n"
 		}
 
-		f, err := os.Create(a.tmpLocation() + "/" + curfile)
-		if err != nil {
-			a.flog.Println(err)
-		}
+		out += l + "\n"
 
-		defer f.Close()
+	}
 
-		out = a.addMissingImports(importsNeeded, out)
+	if err := scanner.Err(); err != nil {
+		a.flog.Println(err)
+	}
 
-		b, err := f.WriteString(out)
-		fmt.Println(b)
-		if err != nil {
-			a.flog.Println(err)
-		}
+	return out, importsNeeded
+}
 
+// reWriteFile rewrites curfile with out && adds any missing imports
+func (a *Aop) reWriteFile(curfile string, out string, importsNeeded []string) {
+
+	f, err := os.Create(a.tmpLocation() + "/" + curfile)
+	if err != nil {
+		a.flog.Println(err)
+	}
+
+	defer f.Close()
+
+	out = a.addMissingImports(importsNeeded, out)
+
+	b, err := f.WriteString(out)
+	fmt.Println(b)
+	if err != nil {
+		a.flog.Println(err)
 	}
 }
 

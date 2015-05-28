@@ -111,7 +111,6 @@ func (a *Aop) parseAdvice(body string) Advice {
 
 	arbrace := strings.Split(advize, "around: {")
 	if len(arbrace) > 1 {
-		a.flog.Println("grabbing around")
 		ar4 := strings.Split(arbrace[1], "}")[0]
 		ar4t = strings.TrimSpace(ar4)
 	}
