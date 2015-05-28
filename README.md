@@ -434,6 +434,10 @@ else.
 
 ### TODO - shortlist before opening up
 
+  * example of matching functions
+    -- right now we simply re-write functions ala, gofmt for around advice
+      matching on regex..
+
   * logo
 
   * need to be able to modify a goroutine
