@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/deferpanic/gocut/aop"
+	"github.com/deferpanic/goweave/aop"
 	"log"
 )
 
@@ -9,9 +9,9 @@ const (
 	version = "v0.1"
 )
 
-// main is the main point of entry for running gocut
+// main is the main point of entry for running goweave
 func main() {
-	log.Println("gocut " + version)
+	log.Println("goweave " + version)
 
 	a := aop.NewAop()
 	a.Run()

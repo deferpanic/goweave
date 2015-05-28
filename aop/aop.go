@@ -583,7 +583,7 @@ func (a *Aop) findAspects() []string {
 
 	files, _ := ioutil.ReadDir("./")
 	for _, f := range files {
-		if strings.Contains(f.Name(), ".gocut") {
+		if strings.Contains(f.Name(), ".weave") {
 			aspects = append(aspects, f.Name())
 			fmt.Println(f.Name())
 		}

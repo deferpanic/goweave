@@ -1,25 +1,29 @@
-# gocut
+# goweave
   Aspect Oriented Programming for Go
+
+![Weave](http://i.imgur.com/JUUgIuv.png)
+![Weave2](http://i.imgur.com/NbXOwZU.png)
+
 
 ### TOC
 
-  [Usage](https://github.com/deferpanic/gocut#usage)
+  [Usage](https://github.com/deferpanic/goweave#usage)
 
-  [Examples](https://github.com/deferpanic/gocut#examples)
+  [Examples](https://github.com/deferpanic/goweave#examples)
 
-  [What is AOP](https://github.com/deferpanic/gocut#what_is_aop)
+  [What is AOP](https://github.com/deferpanic/goweave#what_is_aop)
 
-  [Why](https://github.com/deferpanic/gocut#why)
+  [Why](https://github.com/deferpanic/goweave#why)
 
-  [FAQ](https://github.com/deferpanic/gocut#faq)
+  [FAQ](https://github.com/deferpanic/goweave#faq)
 
-  [gocutls](https://github.com/deferpanic/gocut#gocutls)
+  [goweavels](https://github.com/deferpanic/goweave#goweavels)
 
-  [Help](https://github.com/deferpanic/gocut#help)
+  [Help](https://github.com/deferpanic/goweave#help)
 
-  [Todo](https://github.com/deferpanic/gocut#todo)
+  [Todo](https://github.com/deferpanic/goweave#todo)
 
-  [Roadmap](https://github.com/deferpanic/gocut#roadmap)
+  [Roadmap](https://github.com/deferpanic/goweave#roadmap)
 
 ### Usage:
 
@@ -32,7 +36,7 @@ Where you might use
 simply replace with
 
 ```go
-  gocut
+  goweave
 ```
 
 ### Use Cases
@@ -75,7 +79,7 @@ your project we should be able to provide aspect coverage for it.
 There are a few design decisions that need to be made to support across
 projects && into stdlib. Stdlib probably won't come until we move to IR.
 
-To try things out first try running `go build`. Then try running `gocut`.
+To try things out first try running `go build`. Then try running `goweave`.
 
 #### Before Main
 
@@ -137,14 +141,14 @@ not going to stay the same - it will be improved in the future.
 
   I apologize for giving you the forks to stab your collective eyes out.
 
-  I think a good gocutl to have is to make it as proper go as possible. Suggestions welcome.
+  I think a good goweavel to have is to make it as proper go as possible. Suggestions welcome.
 
 ## What is AOP !??
 
   [Aspect oriented programming](http://docs.jboss.org/aop/1.1/aspect-framework/userguide/en/html/what.html)
 
   in short - we are a pre-processor that generates code defined to a
-gocut file
+goweave file
 
   tools existing:
     go fmt:
@@ -224,7 +228,7 @@ request if so.
 
   * advice - behavior to apply
 
-  * aspect - a .gocut file - file that contains our behavior
+  * aspect - a .goweave file - file that contains our behavior
 
 ### Aspects:
 
@@ -310,7 +314,7 @@ I was going to name this the flaming neckbeard in honor of those who
 after seeing this code or hearing about it would have their respective
 beards spontaneously combust into flame.
 
-Instead I named it after gocut, India where I went to relax after
+Instead I named it after goweave, India where I went to relax after
 GopherCon India back in February and hacked out deprehend. I see it as
 an extension of that work.
 
@@ -347,7 +351,7 @@ That is the rationale behind this.
 
 * no code modifications - my main use cases involve *not* modifying code
   so that is why we initially did not support annotations - I'm not
-  opposed to adding these but that's not my intended gocutl
+  opposed to adding these but that's not my intended goweavel
 
 ### FAQ
 
