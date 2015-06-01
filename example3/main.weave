@@ -1,5 +1,5 @@
 aspect {
-  pointcut: main
+  pointcut: execute(main)
   imports (
     "fmt"
     "github.com/deferpanic/deferclient/deferstats"
@@ -13,7 +13,7 @@ aspect {
 }
 
 aspect {
-  pointcut: go
+  pointcut: execute(go)
   advice: {
     before: {
       defer dps.Persist()

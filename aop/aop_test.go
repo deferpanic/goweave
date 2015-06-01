@@ -4,7 +4,7 @@ import (
 	"testing"
 )
 
-func TestTxAfter(t *testing.T) {
+func TestApplyAroundAdvice(t *testing.T) {
 
 	f1 := `package main
 
@@ -38,10 +38,10 @@ func main() {
 	aspects = append(aspects, aspect)
 	aop.aspects = aspects
 
-	after := aop.txAfter("/tmp/blah", f1)
+	after := aop.applyAroundAdvice("/tmp/blah", f1)
 
 	if after != expected {
-		t.Error("txAfter is not transforming correctly")
+		t.Error("applyAroundAdvice is not transforming correctly")
 	}
 
 }
@@ -163,7 +163,7 @@ fmt.Println("there is no need to panic")
 
 }
 
-func TestFunkyShit(t *testing.T) {
+func TestApplyExecutionJP(t *testing.T) {
 
 	f1 := `package main
 
@@ -224,7 +224,8 @@ func main() {
 			after:  "fmt.Println(\"after call\")",
 		},
 		pointkut: Pointcut{
-			def: "d(http.ResponseWriter, *http.Request)",
+			def:  "d(http.ResponseWriter, *http.Request)",
+			kind: 2,
 		},
 	}
 
@@ -232,12 +233,12 @@ func main() {
 	aspects = append(aspects, aspect)
 	aop.aspects = aspects
 
-	after := aop.FunkyShit("/tmp/blah", f1)
+	after := aop.applyExecutionJP("/tmp/blah", f1)
 
 	if after != expected {
 		t.Error(after)
 		t.Error(expected)
-		t.Error("funkyShit is not transforming correctly")
+		t.Error("applyExecutionJP is not transforming correctly")
 	}
 
 }

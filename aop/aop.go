@@ -59,10 +59,14 @@ func parseExpr(s string) ast.Expr {
 	return exp
 }
 
-// txAfter uses code from gofmt to wrap any after advice
+// applyAroundAdvice uses code from gofmt to wrap any after advice
 // essentially this is the same stuff you could do w/the cmdline tool,
 // gofmt
-func (a *Aop) txAfter(fname string, lines string) string {
+//
+// FIXME - mv to CallExpr
+//
+// looks for call joinpoints && provides around advice capability
+func (a *Aop) applyAroundAdvice(fname string, lines string) string {
 
 	stuff := lines
 
@@ -102,15 +106,17 @@ func (a *Aop) txAfter(fname string, lines string) string {
 	return stuff
 }
 
-// FunkyShit looks for callExpr's that whose args match those in a
-// pattern
-// || FuncDeclr
-func (a *Aop) FunkyShit(fname string, stuff string) string {
+// applyExecutionJP applies any advice for execution joinpoints
+func (a *Aop) applyExecutionJP(fname string, stuff string) string {
 
 	rout := stuff
 
 	for i := 0; i < len(a.aspects); i++ {
 		aspect := a.aspects[i]
+		if !(aspect.pointkut.kind > 0) {
+			continue
+		}
+
 		pk := aspect.pointkut.def
 
 		// locking down this tmp for now...
@@ -130,6 +136,8 @@ func (a *Aop) FunkyShit(fname string, stuff string) string {
 
 		linecnt := 0
 
+		// look for function declarations - ala look for execution
+		// joinpoints
 		for _, decl := range file.Decls {
 			fn, ok := decl.(*ast.FuncDecl)
 			if !ok {
@@ -265,10 +273,10 @@ func (a *Aop) VisitFile(fp string, fi os.FileInfo, err error) error {
 		lines := a.deDupeImports(fp, flines, pruned)
 
 		// provides 'around' style advice
-		stuff := a.txAfter(fp, lines)
+		stuff := a.applyAroundAdvice(fp, lines)
 		a.writeOut(fp, stuff)
 
-		stuff = a.FunkyShit(fp, stuff)
+		stuff = a.applyExecutionJP(fp, stuff)
 
 		a.writeOut(fp, stuff)
 

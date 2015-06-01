@@ -1,5 +1,5 @@
 aspect {
-  pointcut: main
+  pointcut: execute(main)
   imports (
     "fmt"
   )
@@ -11,7 +11,7 @@ aspect {
 }
 
 aspect {
-  pointcut: beforeBob
+  pointcut: execute(beforeBob)
   advice: {
     before: {
       fmt.Println("before bob")
@@ -20,7 +20,7 @@ aspect {
 }
 
 aspect {
-  pointcut: afterSally
+  pointcut: execute(afterSally)
   advice: {
     after: {
       fmt.Println("after sally")
@@ -29,7 +29,7 @@ aspect {
 }
 
 aspect {
-  pointcut: aroundTom
+  pointcut: execute(aroundTom)
   advice: {
     before: {
       fmt.Println("before tom")
@@ -41,7 +41,7 @@ aspect {
 }
 
 aspect {
-  pointcut: innerFors
+  pointcut: execute(innerFors)
   advice: {
     before: {
         for i:=0; i<10; i++ {
@@ -52,7 +52,7 @@ aspect {
 }
 
 aspect {
-  pointcut: retstr
+  pointcut: execute(retstr)
   advice: {
     before: {
       fmt.Println("yo joe")
@@ -61,7 +61,7 @@ aspect {
 }
 
 aspect {
-  pointcut: retbool
+  pointcut: execute(retbool)
   advice: {
     before: {
       fmt.Println("booooool")
@@ -70,7 +70,7 @@ aspect {
 }
 
 aspect {
-  pointcut: other/FuncMaster
+  pointcut: execute(other/FuncMaster)
   advice: {
     before: {
       fmt.Println("before in a sub-pkg")
@@ -79,7 +79,7 @@ aspect {
 }
 
 aspect {
-  pointcut: FuncMaster
+  pointcut: execute(FuncMaster)
   advice: {
     after: {
       fmt.Println("after funcmaster flex rother!")
@@ -88,7 +88,7 @@ aspect {
 }
 
 aspect {
-  pointcut: FuncWithArgs(iarg int, sarg string)
+  pointcut: execute(FuncWithArgs(iarg int, sarg string))
   advice: {
     after: {
       fmt.Println("on args")
@@ -97,7 +97,7 @@ aspect {
 }
 
 aspect {
-  pointcut: FuncWithArgsAndReturn(iarg int, sarg string) (int, errror)
+  pointcut: execute(FuncWithArgsAndReturn(iarg int, sarg string) (int, errror))
   advice: {
     after: {
       fmt.Println("on args")

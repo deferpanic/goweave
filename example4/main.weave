@@ -1,5 +1,5 @@
 aspect {
-  pointcut: main
+  pointcut: execute(main)
   imports (
     "fmt"
     "github.com/deferpanic/deferclient/deferstats"
@@ -14,7 +14,7 @@ aspect {
 }
 
 aspect {
-  pointcut: d(http.ResponseWriter, *http.Request)
+  pointcut: execute(d(http.ResponseWriter, *http.Request))
   advice: {
     before: {
       fmt.Println("before call")

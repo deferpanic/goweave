@@ -1,5 +1,5 @@
 aspect {
-  pointcut: main
+  pointcut: execute(main)
   imports (
     "fmt"
     "github.com/deferpanic/deferclient/deferstats"
@@ -14,7 +14,7 @@ aspect {
 }
 
 aspect {
-  pointcut: http.HandleFunc(d, s)
+  pointcut: call(http.HandleFunc(d, s))
   advice: {
     around: {
       http.HandleFunc(d, dps.HTTPHandlerFunc(s))

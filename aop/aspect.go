@@ -124,6 +124,8 @@ func (a *Aop) parseAdvice(body string) Advice {
 }
 
 // parseAspectFile loads an individual file containing aspects
+// there be tigers here
+// subject to immediate and dramatic change
 func (a *Aop) parseAspectFile(body string) {
 	results := []Aspect{}
 

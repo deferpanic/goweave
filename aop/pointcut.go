@@ -2,7 +2,6 @@ package aop
 
 import (
 	"errors"
-	"log"
 	"regexp"
 	"strings"
 )
@@ -23,42 +22,43 @@ func pointCutType() map[int]string {
 	}
 }
 
-// pointCutKind returns the map id of human expression of pointcut type
-func pointCutKind(l string) int {
+// set def extracts the joinpoint from a pointcut definition
+func setDef(t string) (int, string, error) {
 
-	matched, err := regexp.MatchString("call(.*)", l)
+	m := `(execute|call)\((.*)\)`
+	re, err := regexp.Compile(m)
 	if err != nil {
-		log.Println(err)
+		return 0, "", errors.New("bad regex")
 	}
 
-	if matched {
-		return 1
+	res := re.FindAllStringSubmatch(t, -1)
+	if len(res[0]) == 3 {
+		if res[0][1] == "call" {
+			return 1, res[0][2], nil
+		} else {
+			return 2, res[0][2], nil
+		}
+	} else {
+		return 0, "", errors.New("bad pointcut")
 	}
-
-	matched, err = regexp.MatchString("execute(.*)", l)
-	if err != nil {
-		log.Println(err)
-	}
-
-	if matched {
-		return 2
-	}
-
-	return -1
 }
 
-// parsePointCut parses out a pointcut from shit
+// parsePointCut parses out a pointcut from an aspect
 func (a *Aop) parsePointCut(body string) (Pointcut, error) {
 	pc := strings.Split(body, "pointcut:")
 
 	if len(pc) > 1 {
 		rpc := strings.Split(pc[1], "\n")[0]
 		t := strings.TrimSpace(rpc)
-		k := pointCutKind(t)
+
+		k, def, err := setDef(t)
+		if err != nil {
+			return Pointcut{}, err
+		}
 
 		return Pointcut{
-			def:      t,
-			funktion: t,
+			def:      def,
+			funktion: def,
 			kind:     k,
 		}, nil
 	} else {

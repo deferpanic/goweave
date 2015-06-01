@@ -8,7 +8,7 @@ func TestBefore(t *testing.T) {
 
 	f := `
 aspect {
-  pointcut: main
+  pointcut: execute(main)
   advice: {
 	before: {
     	fmt.Println("before main")
@@ -25,6 +25,10 @@ aspect {
 	}
 
 	first := aop.aspects[0]
+
+	if first.pointkut.kind != 2 {
+		t.Error("didn't set pointcut definition correctly")
+	}
 
 	if first.pointkut.def != "main" {
 		t.Error("didn't set pointcut definition correctly")
@@ -56,7 +60,7 @@ func TestAfter(t *testing.T) {
 
 	f := `
 aspect {
-  pointcut: main
+  pointcut: execute(main)
   advice: {
 	after: {
 	 	fmt.Println("after main")
@@ -100,7 +104,7 @@ func TestParseAspectFile(t *testing.T) {
 
 	f := `
 aspect {
-  pointcut: main
+  pointcut: execute(main)
   imports (
     "fmt"
     "github.com/deferpanic/deferclient"
@@ -151,7 +155,7 @@ func TestNoImports(t *testing.T) {
 
 	f := `
 aspect {
-  pointcut: main
+  pointcut: execute(main)
   advice: {
 	before: {
     	fmt.Println("before main")
@@ -198,7 +202,7 @@ func TestAspectScope(t *testing.T) {
 
 	f := `
 aspect {
-  pointcut: innerFors
+  pointcut: execute(innerFors)
   advice: {
     before: {
         for i:=0; i<10; i++ {

@@ -459,28 +459,11 @@ else.
 
 * This *might* eat your cat - watch out.
 
-### Notes -
-
-  * ~/ap/main.go
-    https://github.com/tmc/fix/blob/master/fix.go
-
-  * go fix yo' shit
-    - https://code.google.com/p/go/source/browse/src/cmd/fix/netdial.go?name=go1
-    - https://code.google.com/p/go/source/browse/src/cmd/fix/osopen.go?name=go1
-    - https://code.google.com/p/go/source/browse/src/cmd/fix/httpserver.go?name=go1
-
-  * how much do we want to integrate ??
-    https://www.godoc.org/github.com/tmc/fix
-    (port of rsc's)
-
-
 ### TODO - shortlist before opening up
 
-  * example of matching functions
-    -- right now we simply re-write functions ala, gofmt for around advice
-      matching on regex..
+  * diff. between execution joinpoints (inside functions) && call joinpoints (around/outside functions)
 
-    -- we want to be able to do a fn declaration match..
+  * remove the regex stuff
 
   * break apart large tests into units
 
@@ -501,7 +484,24 @@ else.
 
   * partial function matching
 
+  * ~/ap/main.go
+    https://github.com/tmc/fix/blob/master/fix.go
+
+  * go fix yo' shit
+    - https://code.google.com/p/go/source/browse/src/cmd/fix/netdial.go?name=go1
+    - https://code.google.com/p/go/source/browse/src/cmd/fix/osopen.go?name=go1
+    - https://code.google.com/p/go/source/browse/src/cmd/fix/httpserver.go?name=go1
+
+  * how much do we want to integrate ??
+    https://www.godoc.org/github.com/tmc/fix
+    (port of rsc's)
+
+
 ### TODO - a.k.a. - Known Suckiness
+
+* make everything use ast
+
+* make everything modify ast not raw text
 
 * multi-pass parsing
   - this should ideally be a single pass
