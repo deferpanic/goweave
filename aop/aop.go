@@ -43,14 +43,18 @@ func NewAop() *Aop {
 func (a *Aop) Run() {
 	a.prep()
 	a.loadAspects()
+
+	// old-school regex parsing
 	a.transform()
 
+	// applys around advice && evals execution joinpoints
 	filepath.Walk(a.tmpLocation(), a.VisitFile)
 
 	a.build()
 
 }
 
+// parseExpr returns an ast expression from the source s
 func parseExpr(s string) ast.Expr {
 	exp, err := parser.ParseExpr(s)
 	if err != nil {
@@ -66,6 +70,8 @@ func parseExpr(s string) ast.Expr {
 // FIXME - mv to CallExpr
 //
 // looks for call joinpoints && provides around advice capability
+//
+// this is currently a hack to support deferpanic's http lib
 func (a *Aop) applyAroundAdvice(fname string, lines string) string {
 
 	stuff := lines
@@ -530,6 +536,11 @@ func (a *Aop) transform() {
 
 // txAspects reformats the curfile && returns the new out &&
 // importsNeeded
+//
+// apply before && after execution advice via regex
+//
+// adds any missing imports
+// modifies go routine advice
 func (a *Aop) txAspects(curfile string, rootpkg string) (string, []string) {
 	importsNeeded := []string{}
 

@@ -441,15 +441,6 @@ else.
 
 * This *might* eat your cat - watch out.
 
-### TODO - shortlist before opening up
-
-  * probably change the call/around advice in the http example
-    -- right now it's just replacing - we want to show true around usage
-
-  * remove the regex stuff
-
-  * break apart large tests into units
-
 ### random thoughts
 
   * https://groups.google.com/forum/#!topic/golang-nuts/TiRX4HcdZMw
