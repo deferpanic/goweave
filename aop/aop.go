@@ -105,11 +105,6 @@ func (a *Aop) txAfter(fname string, lines string) string {
 // FunkyShit looks for callExpr's that whose args match those in a
 // pattern
 // || FuncDeclr
-//
-// 2 options exist to fix:
-//
-// 1) grab start lines first then edit
-// 2) edit in-line && include offsets as they come
 func (a *Aop) FunkyShit(fname string, stuff string) string {
 
 	rout := stuff
@@ -125,6 +120,7 @@ func (a *Aop) FunkyShit(fname string, stuff string) string {
 		}
 
 		before_advice := aspect.advize.before
+		after_advice := aspect.advize.after
 
 		fset := token.NewFileSet()
 		file, err := parser.ParseFile(fset, fname, rout, parser.Mode(0))
@@ -144,12 +140,21 @@ func (a *Aop) FunkyShit(fname string, stuff string) string {
 
 				// begin line
 				begin := fset.Position(fn.Body.Lbrace).Line
-				_ = fset.Position(fn.Body.Rbrace).Line
+				after := fset.Position(fn.Body.Rbrace).Line
 
 				// until this is refactored - any lines we add in our
 				// advice need to be accounted for w/begin
-				rout = a.insertShit(fname, begin+linecnt, before_advice)
-				linecnt += strings.Count(before_advice, "\n") + 1
+
+				if before_advice != "" {
+					rout = a.insertShit(fname, begin+linecnt, before_advice)
+					linecnt += strings.Count(before_advice, "\n") + 1
+				}
+
+				if after_advice != "" {
+					rout = a.insertShit(fname, after+linecnt-1, after_advice)
+					linecnt += strings.Count(after_advice, "\n") + 1
+				}
+
 			}
 		}
 
@@ -242,6 +247,8 @@ func isIdent(expr ast.Expr, ident string) bool {
 	return ok && id.Name == ident
 }
 
+// VisitFile walks each file and transforms it's
+// this is fairly heavy/expensive/pos right now
 func (a *Aop) VisitFile(fp string, fi os.FileInfo, err error) error {
 	matched, err := filepath.Match("*.go", fi.Name())
 	if err != nil {
@@ -257,6 +264,7 @@ func (a *Aop) VisitFile(fp string, fi os.FileInfo, err error) error {
 		pruned := pruneImports(af)
 		lines := a.deDupeImports(fp, flines, pruned)
 
+		// provides 'around' style advice
 		stuff := a.txAfter(fp, lines)
 		a.writeOut(fp, stuff)
 

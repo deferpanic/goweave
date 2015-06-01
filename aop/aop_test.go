@@ -197,11 +197,13 @@ import (
 func panicHandler(w http.ResponseWriter, r *http.Request) {
 fmt.Println("before call")
 	panic("there is no need to panic")
+fmt.Println("after call")
 }
 
 func panic2Handler(w http.ResponseWriter, r *http.Request) {
 fmt.Println("before call")
 	panic("there is no need to panic")
+fmt.Println("after call")
 }
 
 func main() {
@@ -219,6 +221,7 @@ func main() {
 	aspect := Aspect{
 		advize: Advice{
 			before: "fmt.Println(\"before call\")",
+			after:  "fmt.Println(\"after call\")",
 		},
 		pointkut: Pointcut{
 			def: "d(http.ResponseWriter, *http.Request)",
