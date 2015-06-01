@@ -102,6 +102,123 @@ func (a *Aop) txAfter(fname string, lines string) string {
 	return stuff
 }
 
+// FunkyShit looks for callExpr's that whose args match those in a
+// pattern
+// || FuncDeclr
+//
+// this function is currently fucked up -- it grabs the correct lines
+// but the offsets get fucked cause we don't re-scan the file's lines..
+//
+// 2 options exist to fix:
+//
+// 1) grab start lines first then edit
+// 2) edit in-line && include offsets as they come
+func (a *Aop) FunkyShit(fname string, stuff string) string {
+
+	rout := stuff
+
+	for i := 0; i < len(a.aspects); i++ {
+		aspect := a.aspects[i]
+		pk := aspect.pointkut.def
+
+		// locking down this tmp for now...
+		//   pointcut: d(http.ResponseWriter, *http.Request)
+		if !strings.Contains(pk, "http.ResponseWriter") {
+			continue
+		}
+
+		before_advice := aspect.advize.before
+
+		fset := token.NewFileSet()
+		file, err := parser.ParseFile(fset, fname, rout, parser.Mode(0))
+		if err != nil {
+			log.Println("Failed to parse source: %s", err.Error())
+		}
+
+		linecnt := 0
+
+		for _, decl := range file.Decls {
+			fn, ok := decl.(*ast.FuncDecl)
+			if !ok {
+				continue
+			}
+
+			if containArgs(pk, fn.Type.Params.List) {
+
+				// begin line
+				begin := fset.Position(fn.Body.Lbrace).Line
+				_ = fset.Position(fn.Body.Rbrace).Line
+
+				// until this is refactored - any lines we add in our
+				// advice need to be accounted for w/begin
+				rout = a.insertShit(fname, begin+linecnt, before_advice)
+				linecnt += strings.Count(before_advice, "\n") + 1
+			}
+		}
+
+	}
+
+	return rout
+}
+
+func containArgs(pk string, p []*ast.Field) bool {
+	// fmt.Println("pointcut args")
+	// argz := strings.Split(pk, ",")
+	rtrue := 0
+
+	for _, field := range p {
+
+		// syntax matching http.ResponseWriter for instance
+		if isPkgDot(field.Type, "http", "ResponseWriter") {
+			rtrue += 1
+		}
+
+		if isPtrPkgDot(field.Type, "http", "Request") {
+			rtrue += 1
+		}
+
+		if rtrue >= 2 {
+			return true
+		}
+	}
+
+	return false
+}
+
+// insertShit inserts writes to fname lntxt @ iline
+func (a *Aop) insertShit(fname string, iline int, lntxt string) string {
+	// insert that shit for front concern
+	flines := fileLines(fname)
+
+	out := ""
+	for i := 0; i < len(flines); i++ {
+		if i == iline {
+			out += lntxt + "\n"
+		}
+
+		out += flines[i] + "\n"
+	}
+
+	a.writeOut(fname, out)
+
+	return out
+}
+
+func isPkgDot(expr ast.Expr, pkg, name string) bool {
+	sel, ok := expr.(*ast.SelectorExpr)
+	return ok && isIdent(sel.X, pkg) && isIdent(sel.Sel, name)
+}
+
+func isPtrPkgDot(t ast.Expr, pkg, name string) bool {
+	ptr, ok := t.(*ast.StarExpr)
+	return ok && isPkgDot(ptr.X, pkg, name)
+}
+
+func isIdent(expr ast.Expr, ident string) bool {
+	id, ok := expr.(*ast.Ident)
+	return ok && id.Name == ident
+}
+
 func (a *Aop) VisitFile(fp string, fi os.FileInfo, err error) error {
 	matched, err := filepath.Match("*.go", fi.Name())
 	if err != nil {
@@ -110,7 +227,6 @@ func (a *Aop) VisitFile(fp string, fi os.FileInfo, err error) error {
 	}
 
 	if matched {
-		fmt.Println("looking at " + fp)
 
 		af := a.ParseAST(fp)
 
@@ -119,6 +235,9 @@ func (a *Aop) VisitFile(fp string, fi os.FileInfo, err error) error {
 		lines := a.deDupeImports(fp, flines, pruned)
 
 		stuff := a.txAfter(fp, lines)
+		a.writeOut(fp, stuff)
+
+		stuff = a.FunkyShit(fp, stuff)
 
 		a.writeOut(fp, stuff)
 
@@ -383,9 +502,11 @@ func (a *Aop) txAspects(curfile string, rootpkg string) (string, []string) {
 
 	out := ""
 
+	// FIXME
 	// poor man's scope
 	scope := 0
 
+	// FIXME
 	// poor man's import parsing
 	inImport := false
 
@@ -438,8 +559,6 @@ func (a *Aop) txAspects(curfile string, rootpkg string) (string, []string) {
 						for i := 0; ; i++ {
 							scanner.Scan()
 							l2 := scanner.Text()
-
-							fmt.Println(l2)
 
 							if strings.Contains(l2, "{") {
 								nscope += 1
@@ -512,8 +631,7 @@ func (a *Aop) reWriteFile(curfile string, out string, importsNeeded []string) {
 
 	out = a.addMissingImports(importsNeeded, out)
 
-	b, err := f.WriteString(out)
-	fmt.Println(b)
+	_, err = f.WriteString(out)
 	if err != nil {
 		a.flog.Println(err)
 	}

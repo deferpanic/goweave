@@ -16,6 +16,30 @@ import (
 	"unicode/utf8"
 )
 
+func rewriteNoPat(replace ast.Expr, p *ast.File) *ast.File {
+	cmap := ast.NewCommentMap(token.NewFileSet(), p, p.Comments)
+	m := make(map[string]reflect.Value)
+	repl := reflect.ValueOf(replace)
+
+	var rewriteVal func(val reflect.Value) reflect.Value
+	rewriteVal = func(val reflect.Value) reflect.Value {
+		// don't bother if val is invalid to start with
+		if !val.IsValid() {
+			return reflect.Value{}
+		}
+		for k := range m {
+			delete(m, k)
+		}
+		val = apply(rewriteVal, val)
+		val = subst(m, repl, reflect.ValueOf(val.Interface().(ast.Node).Pos()))
+		return val
+	}
+
+	r := apply(rewriteVal, reflect.ValueOf(p)).Interface().(*ast.File)
+	r.Comments = cmap.Filter(r).Comments() // recreate comments list
+	return r
+}
+
 func rewriteFile2(pattern, replace ast.Expr, p *ast.File) *ast.File {
 	cmap := ast.NewCommentMap(token.NewFileSet(), p, p.Comments)
 	m := make(map[string]reflect.Value)

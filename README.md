@@ -144,21 +144,28 @@ not going to stay the same - it will be improved in the future.
 
   I apologize for giving you the forks to stab your collective eyes out.
 
-  I think a good goweavel to have is to make it as proper go as possible. Suggestions welcome.
+  I think a good goal to have is to make it as proper go as possible.
+
+  Suggestions more than welcome!
 
 ## What is AOP !??
 
   [Aspect oriented programming](http://docs.jboss.org/aop/1.1/aspect-framework/userguide/en/html/what.html)
 
-  in short - we are a pre-processor that generates code defined to a
-goweave file
+  In short - this is a pre-processor that generates code defined by a
+goweave specification file.
 
-  tools existing:
+  Existing Tools:
     go fmt:
       This is actually used for around advice. It allows you to wrap
-methods.
+methods. Having said that - we wish to do more proper around advice than
+simply re-writing the function declaration.
 
     go fix:
+      This is one hell of an awesome tool. I just think it's a little
+too low-level for what we are wanting to do. Remember - one of the
+solutions of this tool is to make things as trivial as possible to
+insert new functionality.
 
     go cover:
       This is used to provide code coverage and has similar properties
@@ -175,6 +182,8 @@ request if so.
 
   * join point - places you can apply behavior
     -- method call
+    These happen before or after calling a method.
+
     ex:
     ```go
       some.stuff()
@@ -199,7 +208,8 @@ request if so.
       somewrapper(some.stuff())
     ```
 
-    -- method execution (what we are doing right now)
+    -- method execution
+      These happen inside a method.
     ```go
       func stuff() {
         fmt.Println("stuff")
@@ -225,13 +235,24 @@ request if so.
   * pointcut - expression that details where to apply behavior
     -- right now we only explicitly match on function names
 
+    explicit function name:
     ```go
       pointcut: beforeBob
     ```
 
-  * advice - behavior to apply
+    explicit function name w/wildcard arguments:
+    ```go
+      pointcut: http.HandleFunc(d, s)
+    ```
 
-  * aspect - a .goweave file - file that contains our behavior
+
+  * advice - behavior to apply
+    Behavior can be {before, after, around}. Around currently modifies
+method calling.
+
+  * aspect - a .weave file that contains our behavior
+    Right now we support multiple .weave projects for a project and they
+will apply advice recursively over a project.
 
 ### Aspects:
 
@@ -282,11 +303,14 @@ change "heavily".
       execute(b.*)
     ```
 
-  * function declaration
+  * function declaration w/wildcard arguments
     ```go
-      (w http.ResponseWriter, r *http.Request)
+      http.HandleFunc(d, s)
     ```
 
+  * wildcard function name w/explicit arguments
+      *(w http.ResponseWriter, r *http.Request)
+ 
   * sub-pkg && method name
     ```go
       pkg/blah
@@ -435,6 +459,21 @@ else.
 
 * This *might* eat your cat - watch out.
 
+### Notes -
+
+  * ~/ap/main.go
+    https://github.com/tmc/fix/blob/master/fix.go
+
+  * go fix yo' shit
+    - https://code.google.com/p/go/source/browse/src/cmd/fix/netdial.go?name=go1
+    - https://code.google.com/p/go/source/browse/src/cmd/fix/osopen.go?name=go1
+    - https://code.google.com/p/go/source/browse/src/cmd/fix/httpserver.go?name=go1
+
+  * how much do we want to integrate ??
+    https://www.godoc.org/github.com/tmc/fix
+    (port of rsc's)
+
+
 ### TODO - shortlist before opening up
 
   * example of matching functions
@@ -442,12 +481,6 @@ else.
       matching on regex..
 
     -- we want to be able to do a fn declaration match..
-
-  * logo
-
-  * need to be able to modify a goroutine
-    (need that AST <3 again)
-    (eg: panics.. inside goroutines)
 
   * break apart large tests into units
 

@@ -162,3 +162,77 @@ fmt.Println("there is no need to panic")
 	}
 
 }
+
+func TestFunkyShit(t *testing.T) {
+
+	f1 := `package main
+
+import (
+	"net/http"
+)
+
+// panic test
+func panicHandler(w http.ResponseWriter, r *http.Request) {
+	panic("there is no need to panic")
+}
+
+func panic2Handler(w http.ResponseWriter, r *http.Request) {
+	panic("there is no need to panic")
+}
+
+func main() {
+	http.HandleFunc("/panic", panicHandler)
+	http.HandleFunc("/panic2", panic2Handler)
+
+	http.ListenAndServe(":3000", nil)
+}`
+
+	expected := `package main
+
+import (
+	"net/http"
+)
+
+// panic test
+func panicHandler(w http.ResponseWriter, r *http.Request) {
+fmt.Println("before call")
+	panic("there is no need to panic")
+}
+
+func panic2Handler(w http.ResponseWriter, r *http.Request) {
+fmt.Println("before call")
+	panic("there is no need to panic")
+}
+
+func main() {
+	http.HandleFunc("/panic", panicHandler)
+	http.HandleFunc("/panic2", panic2Handler)
+
+	http.ListenAndServe(":3000", nil)
+}
+`
+
+	aop := &Aop{}
+
+	aop.writeOut("/tmp/blah", f1)
+
+	aspect := Aspect{
+		advize: Advice{
+			before: "fmt.Println(\"before call\")",
+		},
+		pointkut: Pointcut{
+			def: "d(http.ResponseWriter, *http.Request)",
+		},
+	}
+
+	aspects := []Aspect{}
+	aspects = append(aspects, aspect)
+	aop.aspects = aspects
+
+	after := aop.FunkyShit("/tmp/blah", f1)
+
+	if after != expected {
+		t.Error("funkyShit is not transforming correctly")
+	}
+
+}
