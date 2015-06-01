@@ -29,7 +29,8 @@
 goweave specification file - it's not a proper grammar yet although it
 probably should be.
 
-  Existing Tools:
+  ### Existing Tools:
+
     * go fmt:
       This is actually used for around advice currently. It allows you to wrap
 methods. Having said that - we wish to do more proper around advice than
