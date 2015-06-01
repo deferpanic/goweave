@@ -29,7 +29,7 @@
 goweave specification file - it's not a proper grammar yet although it
 probably should be.
 
-  ### Existing Tools:
+### Existing Tools:
 
     * go fmt:
       This is actually used for around advice currently. It allows you to wrap
@@ -53,7 +53,7 @@ generation.
 ### Why!??!
 
 > "... which is our fulltime job, write a program to write a program"
-  - rob pike
+> rob pike
 
 The critics yell red in the face - "We came to go to get away from enterprise java!!
 What the hell is the matter with you!?"
@@ -140,19 +140,6 @@ projects && into stdlib. Stdlib probably won't come until we move to IR.
 
 To try things out first try running `go build`. Then try running `goweave`.
 
-#### Before Main
-
-```go
-aspect {
-  pointcut: execute(main)
-  advice: {
-    before: {
-      fmt.Println("before main")
-    }
-  }
-}
-```
-
 #### Before Function
 ```go
 aspect {
@@ -177,16 +164,13 @@ aspect {
 }
 ```
 
-### Around Function
+### Around Function -- FIXME
 ```
 aspect {
-  pointcut: execute(aroundTom)
+  pointcut: call(http.HandleFunc(d, s))
   advice: {
-    before: {
-      fmt.Println("before tom")
-    }
-    after: {
-      fmt.Println("after tom")
+    around: {
+      http.HandleFunc(d, dps.HTTPHandlerFunc(s))
     }
   }
 }
@@ -210,90 +194,16 @@ then extend it maybe through comments.
   I probably have not defined certain things properly here - open a pull
 request if you find something off.
 
-  * join point - places in your code you can apply behavior
+### Join Points
 
-  * pointcut - expression that details where to apply behavior
-
-  We support both method && call pointcut primitive right now:
-    -- __call__
-    These happen before, after or wrap around calling a method. The code
-is outside of the function.
-
-    -- __execute__
-    These happen before or after executing a method. The code is put
-inside the method.
-
-    call examples:
-    ```go
-      some.stuff()
-    ```
-
-    Code will be executed {before, around, after} this call.
-
-    call before:
-    ```go
-      fmt.Println("before")
-      some.stuff()
-    ```
-
-    call after:
-    ```go
-      some.stuff()
-      fmt.Println("before")
-    ```
-
-    call around:
-    ```
-      somewrapper(some.stuff())
-    ```
-
-    execute examples:
-    ```go
-      func stuff() {
-        fmt.Println("stuff")
-      }
-    ```
-
-    execute before:
-    ```go
-      func stuff() {
-        fmt.Println("before")
-        fmt.Println("stuff")
-      }
-    ```
-
-    execute after:
-    ```go
-      func stuff() {
-        fmt.Println("stuff")
-        fmt.Println("after")
-      }
-    ```
-
-    pointcut examples:
-    ```go
-      pointcut: execute(beforeBob)
-    ```
-
-    explicit function name w/wildcard arguments:
-    ```go
-      pointcut: http.HandleFunc(d, s)
-    ```
-
-    explicit function declaration w/wildcard function name:
-    ```go
-      pointcut: execute(d(http.ResponseWriter, *http.Request))
-    ```
-
-  * advice - behavior to apply
-    Behavior can be {before, after, around}. Around advice currently only works
-with call pointcuts.
-
-  * aspect - a .weave file that contains our behavior
-    Right now we support multiple .weave projects for a project and they
-will apply advice recursively over a project.
+  Places in your code you can apply behavior.
 
 ### Aspects:
+
+  A .weave file that contains our behavior.
+
+  Right now we support multiple .weave projects for a project and they
+will apply advice recursively over a project.
 
   The programming theory department says that aspects are common features
 that you use everywhere that don't really have anything at all to do with
@@ -315,9 +225,22 @@ rather the computer do this for us.
 
 ### PointCut:
 
+  An expression that details where to apply behavior.
+
   Pointcuts in other languages such as java can commonly use annotations
     -- we currently don't support this as we want to be un-obtrusive as possible
     -- that is - we don't want to modify go source
+
+  We support both method && call pointcut primitive right now:
+
+    * __call__
+    These happen before, after or wrap around calling a method. The code
+is outside of the function.
+
+    * __execute__
+    These happen before or after executing a method. The code is put
+inside the method.
+
 
   All pointcuts are currently defined only on functions. Struct field
 members are definitely a future feature we could support although go
@@ -363,7 +286,7 @@ change "heavily".
       execute(pkg/struct.b)
     ```
 
-  # note - you have to have the AST for this
+  note - you have to have the AST for this
   * struct && method name
     ```go
       execute(struct.b)
@@ -372,11 +295,62 @@ change "heavily".
 
 ### Advice:
 
-  We currently support the following advice:
+  Behavior to apply.
 
   * before
   * after
   * around
+
+  Around advice currently only works with call pointcuts.
+
+  We currently support the following advice:
+
+    call examples:
+    ```go
+      some.stuff()
+    ```
+
+    Code will be executed {before, around, after} this call.
+
+    __call before:__
+    ```go
+      fmt.Println("before")
+      some.stuff()
+    ```
+
+    __call after:__
+    ```go
+      some.stuff()
+      fmt.Println("before")
+    ```
+
+    __call around:__
+    ```
+      somewrapper(some.stuff())
+    ```
+
+    execute examples:
+    ```go
+      func stuff() {
+        fmt.Println("stuff")
+      }
+    ```
+
+    __execute before:__
+    ```go
+      func stuff() {
+        fmt.Println("before")
+        fmt.Println("stuff")
+      }
+    ```
+
+    __execute after:__
+    ```go
+      func stuff() {
+        fmt.Println("stuff")
+        fmt.Println("after")
+      }
+    ```
 
 ### Goals
 
@@ -468,6 +442,9 @@ else.
 * This *might* eat your cat - watch out.
 
 ### TODO - shortlist before opening up
+
+  * probably change the call/around advice in the http example
+    -- right now it's just replacing - we want to show true around usage
 
   * remove the regex stuff
 
