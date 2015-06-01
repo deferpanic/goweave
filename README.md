@@ -30,28 +30,28 @@ goweave specification file - it's not a proper grammar yet although it
 probably should be.
 
   Existing Tools:
-    go fmt:
+    * go fmt:
       This is actually used for around advice currently. It allows you to wrap
 methods. Having said that - we wish to do more proper around advice than
 simply re-writing the function declaration.
 
-    go fix:
+    * go fix:
       This is one hell of an awesome tool. I just think it's a little
 too low-level for what we are wanting to do. Remember - one of the
 solutions of this tool is to make things as trivial as possible to
 insert new functionality.
 
-    go cover:
+    * go cover:
       This is used to provide code coverage and has similar properties
 to what we want.
 
-    go generate:
+    * go generate:
       We are generating code but we are looking for more extensive code
 generation.
 
 ### Why!??!
 
-"... which is our fulltime job, write a program to write a program"
+> "... which is our fulltime job, write a program to write a program"
   - rob pike
 
 The critics yell red in the face - "We came to go to get away from enterprise java!!
