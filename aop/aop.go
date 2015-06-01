@@ -106,9 +106,6 @@ func (a *Aop) txAfter(fname string, lines string) string {
 // pattern
 // || FuncDeclr
 //
-// this function is currently fucked up -- it grabs the correct lines
-// but the offsets get fucked cause we don't re-scan the file's lines..
-//
 // 2 options exist to fix:
 //
 // 1) grab start lines first then edit
@@ -161,25 +158,51 @@ func (a *Aop) FunkyShit(fname string, stuff string) string {
 	return rout
 }
 
+// containArgs ensures the function signature is 'correct'
+// this currently is erroneous cause it doesn't look for order of
+// arguments && it ignores simple strings -- FIXME
+// 1) simple types - no pkgs
+// 2) order of arguments
 func containArgs(pk string, p []*ast.Field) bool {
-	// fmt.Println("pointcut args")
-	// argz := strings.Split(pk, ",")
-	rtrue := 0
+	pk = strings.Split(pk, "(")[1]
+	pk = strings.Split(pk, ")")[0]
 
-	for _, field := range p {
+	argz := strings.Split(pk, ",")
 
-		// syntax matching http.ResponseWriter for instance
-		if isPkgDot(field.Type, "http", "ResponseWriter") {
-			rtrue += 1
+	// early bail if mis-matched argc
+	if len(argz) != len(p) {
+		return false
+	}
+
+	xtrue := 0
+
+	// for now we ignore simple args like string, int
+	// also - these are un-ordered right now..
+	for i := 0; i < len(argz); i++ {
+		s := strings.Split(argz[i], ".")
+		pkg := strings.TrimSpace(s[0])
+		iname := strings.TrimSpace(s[1])
+
+		if strings.Contains(pkg, "*") {
+			pkg = strings.Replace(pkg, "*", "", -1)
+			for _, field := range p {
+				if isPtrPkgDot(field.Type, pkg, iname) {
+					xtrue += 1
+				}
+			}
+
+		} else {
+			for _, field := range p {
+
+				if isPkgDot(field.Type, pkg, iname) {
+					xtrue += 1
+				}
+			}
 		}
+	}
 
-		if isPtrPkgDot(field.Type, "http", "Request") {
-			rtrue += 1
-		}
-
-		if rtrue >= 2 {
-			return true
-		}
+	if xtrue == len(argz) {
+		return true
 	}
 
 	return false

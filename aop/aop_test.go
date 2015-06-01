@@ -232,6 +232,8 @@ func main() {
 	after := aop.FunkyShit("/tmp/blah", f1)
 
 	if after != expected {
+		t.Error(after)
+		t.Error(expected)
 		t.Error("funkyShit is not transforming correctly")
 	}
 
