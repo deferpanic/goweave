@@ -2,28 +2,79 @@
   Aspect Oriented Programming for Go
 
 ![Weave](http://i.imgur.com/JUUgIuv.png)
-![Weave2](http://i.imgur.com/NbXOwZU.png)
-
 
 ### TOC
-
-  [Usage](https://github.com/deferpanic/goweave#usage)
-
-  [Examples](https://github.com/deferpanic/goweave#examples)
 
   [What is AOP](https://github.com/deferpanic/goweave#what_is_aop)
 
   [Why](https://github.com/deferpanic/goweave#why)
 
-  [FAQ](https://github.com/deferpanic/goweave#faq)
+  [Usage](https://github.com/deferpanic/goweave#usage)
 
-  [goweavels](https://github.com/deferpanic/goweave#goweavels)
+  [Examples](https://github.com/deferpanic/goweave#examples)
+
+  [FAQ](https://github.com/deferpanic/goweave#faq)
 
   [Help](https://github.com/deferpanic/goweave#help)
 
   [Todo](https://github.com/deferpanic/goweave#todo)
 
   [Roadmap](https://github.com/deferpanic/goweave#roadmap)
+
+## What is AOP !??
+
+  [Aspect oriented programming](http://docs.jboss.org/aop/1.1/aspect-framework/userguide/en/html/what.html)
+
+  In short - this is a pre-processor that generates code defined by a
+goweave specification file - it's not a proper grammar yet although it
+probably should be.
+
+  Existing Tools:
+    go fmt:
+      This is actually used for around advice currently. It allows you to wrap
+methods. Having said that - we wish to do more proper around advice than
+simply re-writing the function declaration.
+
+    go fix:
+      This is one hell of an awesome tool. I just think it's a little
+too low-level for what we are wanting to do. Remember - one of the
+solutions of this tool is to make things as trivial as possible to
+insert new functionality.
+
+    go cover:
+      This is used to provide code coverage and has similar properties
+to what we want.
+
+    go generate:
+      We are generating code but we are looking for more extensive code
+generation.
+
+### Why!??!
+
+"... which is our fulltime job, write a program to write a program"
+  - rob pike
+
+The critics yell red in the face - "We came to go to get away from enterprise java!!
+What the hell is the matter with you!?"
+
+I agree this concept can and has been abused in the past.
+
+However, I'm definitely not a code purist - to me coding is a tool first and
+foremost.
+
+I simply wanted an easy way to attach common bits of code to large
+existing codebases without having to hack it in each time to each
+different codebase. I also needed the ability to do this on large
+projects without modifying the source.
+
+Sure I could write method wrappers, I could change code, etc. but I
+don't want to be constantly writing/re-writing/re-moving/inserting tons
+of code just to check things out.
+
+Automate all the things. All this is, is a powertool - I don't care 1% about
+programming theory/philosophy.
+
+That is the rationale behind this.
 
 ### Usage:
 
@@ -39,6 +90,10 @@ simply replace with
   goweave
 ```
 
+Note: depending on how you build your go this may or may not work -
+patches/pulls to make this more generic for everyone are definitely
+welcome.
+
 ### Use Cases
   * error detection && correction
     (ex: force logging of errors on any methods with this declaration)
@@ -47,7 +102,7 @@ simply replace with
     (ex: notate that this data was invalid but allow it to continue)
 
   * i18n
-    (ex: translate this to german if accessed in an improper way)
+    (ex: translate this to esperanto if you can't detect the language)
 
   * security
     (ex: authenticate this user in each http request)
@@ -71,7 +126,7 @@ simply replace with
     (ex: overriding a method/API w/minimum of work)
 
   * static validation
-    (ex: not closing a file when opened for example)
+    (ex: force closing a file if we detect that it hasn't been closed)
 
 ### Examples:
 
@@ -88,7 +143,7 @@ To try things out first try running `go build`. Then try running `goweave`.
 
 ```go
 aspect {
-  pointcut: main
+  pointcut: execute(main)
   advice: {
     before: {
       fmt.Println("before main")
@@ -100,7 +155,7 @@ aspect {
 #### Before Function
 ```go
 aspect {
-  pointcut: beforeBob
+  pointcut: execute(beforeBob)
   advice: {
     before: {
       fmt.Println("before bob")
@@ -112,7 +167,7 @@ aspect {
 #### After Function
 ```
 aspect {
-  pointcut: afterSally
+  pointcut: execute(afterSally)
   advice: {
     after: {
       fmt.Println("after sally")
@@ -124,7 +179,7 @@ aspect {
 ### Around Function
 ```
 aspect {
-  pointcut: aroundTom
+  pointcut: execute(aroundTom)
   advice: {
     before: {
       fmt.Println("before tom")
@@ -144,79 +199,61 @@ not going to stay the same - it will be improved in the future.
 
   I apologize for giving you the forks to stab your collective eyes out.
 
-  I think a good goal to have is to make it as proper go as possible.
+  I think a good goal to have is to make it as proper go as possible and
+then extend it maybe through comments.
 
-  Suggestions more than welcome!
-
-## What is AOP !??
-
-  [Aspect oriented programming](http://docs.jboss.org/aop/1.1/aspect-framework/userguide/en/html/what.html)
-
-  In short - this is a pre-processor that generates code defined by a
-goweave specification file.
-
-  Existing Tools:
-    go fmt:
-      This is actually used for around advice. It allows you to wrap
-methods. Having said that - we wish to do more proper around advice than
-simply re-writing the function declaration.
-
-    go fix:
-      This is one hell of an awesome tool. I just think it's a little
-too low-level for what we are wanting to do. Remember - one of the
-solutions of this tool is to make things as trivial as possible to
-insert new functionality.
-
-    go cover:
-      This is used to provide code coverage and has similar properties
-to what we want.
-
-    go generate:
-      We are generating code but we are looking for more extensive code
-generation.
+  Suggestions/pull requests more than welcome!
 
 ### Definitions:
 
-  I might have gotten some of the terminology wrong here - open a pull
-request if so.
+  I probably have not defined certain things properly here - open a pull
+request if you find something off.
 
-  * join point - places you can apply behavior
-    -- method call
-    These happen before or after calling a method.
+  * join point - places in your code you can apply behavior
 
-    ex:
+  * pointcut - expression that details where to apply behavior
+
+  We support both method && call pointcut primitive right now:
+    -- __call__
+    These happen before, after or wrap around calling a method. The code
+is outside of the function.
+
+    -- __execute__
+    These happen before or after executing a method. The code is put
+inside the method.
+
+    call examples:
     ```go
       some.stuff()
     ```
 
     Code will be executed {before, around, after} this call.
 
-    before:
+    call before:
     ```go
       fmt.Println("before")
       some.stuff()
     ```
 
-    after:
+    call after:
     ```go
       some.stuff()
       fmt.Println("before")
     ```
 
-    around:
+    call around:
     ```
       somewrapper(some.stuff())
     ```
 
-    -- method execution
-      These happen inside a method.
+    execute examples:
     ```go
       func stuff() {
         fmt.Println("stuff")
       }
     ```
 
-    before:
+    execute before:
     ```go
       func stuff() {
         fmt.Println("before")
@@ -224,7 +261,7 @@ request if so.
       }
     ```
 
-    after:
+    execute after:
     ```go
       func stuff() {
         fmt.Println("stuff")
@@ -232,12 +269,9 @@ request if so.
       }
     ```
 
-  * pointcut - expression that details where to apply behavior
-    -- right now we only explicitly match on function names
-
-    explicit function name:
+    pointcut examples:
     ```go
-      pointcut: beforeBob
+      pointcut: execute(beforeBob)
     ```
 
     explicit function name w/wildcard arguments:
@@ -245,10 +279,14 @@ request if so.
       pointcut: http.HandleFunc(d, s)
     ```
 
+    explicit function declaration w/wildcard function name:
+    ```go
+      pointcut: execute(d(http.ResponseWriter, *http.Request))
+    ```
 
   * advice - behavior to apply
-    Behavior can be {before, after, around}. Around currently modifies
-method calling.
+    Behavior can be {before, after, around}. Around advice currently only works
+with call pointcuts.
 
   * aspect - a .weave file that contains our behavior
     Right now we support multiple .weave projects for a project and they
@@ -256,16 +294,23 @@ will apply advice recursively over a project.
 
 ### Aspects:
 
-  Aspects are common features that you use everywhere that don't really
-have anything at all to do with your domain logic. If you have a user
-interface that deals with updating passwords, setting preferences, etc.
-logging might be done in the same way as you would log a dog.
+  The programming theory department says that aspects are common features
+that you use everywhere that don't really have anything at all to do with
+your domain logic. Logging is a canonical example - most everything you
+log does not really have anything to do with all the other stuff you
+log.
 
-  Similariy if you had a http controller that whenever you got a request
+  Similarly if you had a http controller that whenever you got a request
 you would update a metric counter for that controller but you do this on
 each api controller - that really has nothing at all to do with the
 controller logic itself. The metric might simply be another aspect that
 is commong everywhere.
+
+  Once again someone might point out why don't you just make a method
+and then wrap each call? The point here is that 1) we don't want to
+modify code, 2) we might not *know* all the places that happens and
+could easily leave something out, 3) we are eternally lazy and would
+rather the computer do this for us.
 
 ### PointCut:
 
@@ -273,27 +318,23 @@ is commong everywhere.
     -- we currently don't support this as we want to be un-obtrusive as possible
     -- that is - we don't want to modify go source
 
-  All pointcuts are currently defined in the same file. This is
-definitely open to discussion on what is best though.
-
-  All pointcuts are currently defined only on functions.
-
-  There is no method overloading in go so currently the last thing in a
-pointcut definition will be the method name (which can be a partial
-match).
+  All pointcuts are currently defined only on functions. Struct field
+members are definitely a future feature we could support although go
+generate might do this acceptably already.
 
   Note: this 'grammar' if you can call it that sucks - expect it to
 change "heavily".
 
   * explicit method name
     ```go
-      call("blah")
+      call(blah)
     ```
 
     ```go
-      execute("blah")
+      execute(blah)
     ```
 
+  TODO
   * partial match method name
     ```go
       call(b.*)
@@ -305,26 +346,26 @@ change "heavily".
 
   * function declaration w/wildcard arguments
     ```go
-      http.HandleFunc(d, s)
+      call(http.HandleFunc(d, s))
     ```
 
   * wildcard function name w/explicit arguments
-      *(w http.ResponseWriter, r *http.Request)
+      execute((w http.ResponseWriter, r *http.Request))
  
   * sub-pkg && method name
     ```go
-      pkg/blah
+      execute(pkg/blah)
     ```
 
   * sub-pkg && struct && method-name
     ```go
-      pkg/struct.b
+      execute(pkg/struct.b)
     ```
 
   # note - you have to have the AST for this
   * struct && method name
     ```go
-      struct.b
+      execute(struct.b)
     ```
 
 
@@ -335,37 +376,6 @@ change "heavily".
   * before
   * after
   * around
-
-### What's up with the Name?
-I was going to name this the flaming neckbeard in honor of those who
-after seeing this code or hearing about it would have their respective
-beards spontaneously combust into flame.
-
-Instead I named it after goweave, India where I went to relax after
-GopherCon India back in February and hacked out deprehend. I see it as
-an extension of that work.
-
-The name sucks - suggest a new one.
-
-### Why!??!
-
-"Which is our fulltime job, write a program to write a program"
-  - rob pike
-
-The critics yell red in the face - "We came to go to get away from enterprise java!!
-What the hell is the matter with you!?"
-
-I agree this concept can and has been abused in the past.
-
-However, I'm definitely not a code purist - to me coding is a tool first and
-foremost.
-
-I simply wanted an easy way to attach common bits of code to large
-existing codebases without having to hack it in each time to each
-different codebase. I also needed the ability to do this on large
-projects without modifying the source.
-
-That is the rationale behind this.
 
 ### Goals
 
@@ -378,14 +388,11 @@ That is the rationale behind this.
 
 * no code modifications - my main use cases involve *not* modifying code
   so that is why we initially did not support annotations - I'm not
-  opposed to adding these but that's not my intended goweavel
+  opposed to adding these but that's not my intended goal
 
 ### FAQ
 
 * Why not go generate?
-
-  I don't intend for this codebase to live on regexen forever. It's more
-of a POC while the business logic gets sorted out.
 
 * why not go fmt?
 
@@ -450,7 +457,7 @@ style of programming allows us to do that.
 This is *alpha* software - at best. It's more of an idea right now than anything
 else.
 
-* Expect the grammars {aspects, pointcuts} to change.
+* Expect the "grammars" {aspects, pointcuts} to change.
 
 * This is currently *much* slower compared to native go build. Expect that to
   change but right now it's slow.
@@ -460,8 +467,6 @@ else.
 * This *might* eat your cat - watch out.
 
 ### TODO - shortlist before opening up
-
-  * diff. between execution joinpoints (inside functions) && call joinpoints (around/outside functions)
 
   * remove the regex stuff
 
@@ -510,33 +515,26 @@ else.
 
 * import vendoring/re-writing
 
-* inner vs. outer cutpoints
-  - tha fuck?
-
 * better error handling
   - can do bail outs if parser doesn't emit correctly
-  - prob. err on gratitutious
 
 * matching function declarations
   - with arguments
   - with return arguments
+  - partial function matching
 
 * scope - lol
-  - this is currently completely stupid
+  - for the regex && line-editing stuff this is completely naive - pulls
+    pls
 
-* relative path fix - lol
-  - relative paths are hacky
-
-* convert all this exec stuff to native go if possible
-
-* cross file
-  -- test?
+* relative path fix
+  - relative paths are super hacky - pulls pls
 
 * annotations??
 
 * Faster
 
-* Better Tested - lulz
+* Better Test coverage - lulz
 
 * make it easy to share advice/aspects through a central site
   -- maybe start off w/just github?
@@ -557,8 +555,8 @@ else.
   * better pointcut grammar
 
 #### Parsing/Speed
-    * move from regexen to AST
-    * move from AST to IR
+  * move from regexen to AST
+  * move from AST to IR
 
 #### Extending
   * add support for 3rd party pkgs
