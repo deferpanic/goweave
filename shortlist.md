@@ -11,6 +11,10 @@ we do this and it is fialing cause the ast parser will prob. bitch..
 
   -- maybe punt this to an integration style test for now ??
 
+* remove the fset warnings by making sure we add imports correctly.
+
+* transfer the rest of the examples to working tests
+
 * probably change the call/around advice in the http example
   -- right now it's just replacing - we want to show true around usage
 

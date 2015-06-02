@@ -108,8 +108,6 @@ func (a *Aop) applyAroundAdvice(fname string, lines string) string {
 
 			stuff = actual
 
-			fmt.Println("should be seeing imports")
-			fmt.Println(aspect.importz)
 			for t := 0; t < len(aspect.importz); t++ {
 				importsNeeded = append(importsNeeded, aspect.importz[t])
 			}
@@ -186,20 +184,13 @@ func (a *Aop) applyExecutionJP(fname string, stuff string) string {
 			}
 		}
 
-		fmt.Println("should be seeing some importz here..")
 		for t := 0; t < len(aspect.importz); t++ {
-			fmt.Println(aspect.importz[t])
 			importsNeeded = append(importsNeeded, aspect.importz[t])
 		}
 	}
 
-	fmt.Println("adding imports for realz..")
-	fmt.Println(len(importsNeeded))
 	// add any imports for this piece of advice applyExecutionJP
 	rout = a.writeMissingImports(fname, rout, importsNeeded)
-
-	fmt.Println("after adding imports")
-	fmt.Println(rout)
 
 	return rout
 }
@@ -326,8 +317,6 @@ func (a *Aop) VisitFile(fp string, fi os.FileInfo, err error) error {
 }
 
 func (a *Aop) writeMissingImports(fp string, out string, importsNeeded []string) string {
-	fmt.Println("adding missing Imports")
-	fmt.Println(importsNeeded)
 
 	out = a.addMissingImports(importsNeeded, out)
 
@@ -730,9 +719,6 @@ func (a *Aop) reWriteFile(curfile string, out string, importsNeeded []string) {
 	}
 
 	defer f.Close()
-
-	fmt.Println("adding missing Imports")
-	fmt.Println(importsNeeded)
 
 	out = a.addMissingImports(importsNeeded, out)
 
