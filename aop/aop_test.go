@@ -292,8 +292,7 @@ func main() {
 
 	expected := `package main
 
-import (
-	"net/http"
+import ("net/http"
 )
 
 // panic test
@@ -368,8 +367,7 @@ func main() {
 
 	expected := `package main
 
-import (
-	"fmt"
+import ("fmt"
 )
 
 func main() {
@@ -423,8 +421,7 @@ func main() {
 
 	expected := `package main
 
-import (
-	"fmt"
+import ("fmt"
 )
 
 func beforeBob() {
@@ -482,8 +479,7 @@ func main() {
 
 	expected := `package main
 
-import (
-	"fmt"
+import ("fmt"
 )
 
 func afterAnny() {
@@ -541,8 +537,7 @@ func main() {
 
 	expected := `package main
 
-import (
-	"fmt"
+import ("fmt"
 )
 
 func aroundArnie() {
@@ -586,64 +581,34 @@ func main() {
 }
 
 func TestApplyExecutionJPInnerFors(t *testing.T) {
-}
-
-func TestApplyExecutionJPRetStr(t *testing.T) {
-}
-
-func TestApplyExecutionJPRetBool(t *testing.T) {
-}
-
-func TestApplyExecutionJPSubPkg(t *testing.T) {
-}
-
-/*
 	f1 := `package main
 
 import (
-	"net/http"
+	"fmt"
 )
 
-// panic test
-func panicHandler(w http.ResponseWriter, r *http.Request) {
-	panic("there is no need to panic")
-}
-
-func panic2Handler(w http.ResponseWriter, r *http.Request) {
-	panic("there is no need to panic")
+func innerFors() {
+	fmt.Println("inner")
 }
 
 func main() {
-	http.HandleFunc("/panic", panicHandler)
-	http.HandleFunc("/panic2", panic2Handler)
-
-	http.ListenAndServe(":3000", nil)
+	innerFors()
 }`
 
 	expected := `package main
 
-import (
-	"net/http"
+import ("fmt"
 )
 
-// panic test
-func panicHandler(w http.ResponseWriter, r *http.Request) {
-fmt.Println("before call")
-	panic("there is no need to panic")
-fmt.Println("after call")
+func innerFors() {
+for i:=0; i<10; i++ {
+	fmt.Println(i)
 }
-
-func panic2Handler(w http.ResponseWriter, r *http.Request) {
-fmt.Println("before call")
-	panic("there is no need to panic")
-fmt.Println("after call")
+	fmt.Println("inner")
 }
 
 func main() {
-	http.HandleFunc("/panic", panicHandler)
-	http.HandleFunc("/panic2", panic2Handler)
-
-	http.ListenAndServe(":3000", nil)
+	innerFors()
 }
 `
 
@@ -653,11 +618,10 @@ func main() {
 
 	aspect := Aspect{
 		advize: Advice{
-			before: "fmt.Println(\"before call\")",
-			after:  "fmt.Println(\"after call\")",
+			before: "for i:=0; i<10; i++ {\n\tfmt.Println(i)\n}",
 		},
 		pointkut: Pointcut{
-			def:  "(http.ResponseWriter, *http.Request)",
+			def:  "innerFors()",
 			kind: 2,
 		},
 	}
@@ -675,4 +639,127 @@ func main() {
 	}
 
 }
-*/
+
+func TestApplyExecutionJPRetStr(t *testing.T) {
+	f1 := `package main
+
+import (
+	"fmt"
+)
+
+func retStr() {
+	fmt.Println("string")
+}
+
+func main() {
+	retStr()
+}`
+
+	expected := `package main
+
+import ("fmt"
+)
+
+func retStr() {
+fmt.Println("before ret")
+	fmt.Println("string")
+}
+
+func main() {
+	retStr()
+}
+`
+
+	aop := &Aop{}
+
+	aop.writeOut("/tmp/blah", f1)
+
+	aspect := Aspect{
+		advize: Advice{
+			before: "fmt.Println(\"before ret\")",
+		},
+		pointkut: Pointcut{
+			def:  "retStr()",
+			kind: 2,
+		},
+	}
+
+	aspects := []Aspect{}
+	aspects = append(aspects, aspect)
+	aop.aspects = aspects
+
+	after := aop.applyExecutionJP("/tmp/blah", f1)
+
+	if after != expected {
+		t.Error(after)
+		t.Error(expected)
+		t.Error("applyExecutionJP is not transforming correctly")
+	}
+
+}
+
+func TestApplyExecutionJPRetBool(t *testing.T) {
+	f1 := `package main
+
+import (
+	"fmt"
+)
+
+func retBool() bool {
+	if 1 == 1 {
+		return true
+	} else {
+		return false
+	}
+}
+
+func main() {
+	retBool()
+}`
+
+	expected := `package main
+
+import ("fmt"
+)
+
+func retBool() bool {
+fmt.Println("before bool")
+	if 1 == 1 {
+		return true
+	} else {
+		return false
+	}
+}
+
+func main() {
+	retBool()
+}
+`
+
+	aop := &Aop{}
+
+	aop.writeOut("/tmp/blah", f1)
+
+	aspect := Aspect{
+		advize: Advice{
+			before: "fmt.Println(\"before bool\")",
+		},
+		pointkut: Pointcut{
+			def:  "retBool()",
+			kind: 2,
+		},
+	}
+
+	aspects := []Aspect{}
+	aspects = append(aspects, aspect)
+	aop.aspects = aspects
+
+	after := aop.applyExecutionJP("/tmp/blah", f1)
+
+	if after != expected {
+		t.Error(after)
+		t.Error(expected)
+		t.Error("applyExecutionJP is not transforming correctly")
+	}
+
+}

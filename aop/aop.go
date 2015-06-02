@@ -75,6 +75,7 @@ func parseExpr(s string) ast.Expr {
 func (a *Aop) applyAroundAdvice(fname string, lines string) string {
 
 	stuff := lines
+	importsNeeded := []string{}
 
 	for i := 0; i < len(a.aspects); i++ {
 		aspect := a.aspects[i]
@@ -106,8 +107,18 @@ func (a *Aop) applyAroundAdvice(fname string, lines string) string {
 			a.writeOut(fname, actual)
 
 			stuff = actual
+
+			fmt.Println("should be seeing imports")
+			fmt.Println(aspect.importz)
+			for t := 0; t < len(aspect.importz); t++ {
+				importsNeeded = append(importsNeeded, aspect.importz[t])
+			}
+
 		}
 	}
+
+	// add any imports for this piece of advice
+	stuff = a.writeMissingImports(fname, stuff, importsNeeded)
 
 	return stuff
 }
@@ -116,6 +127,8 @@ func (a *Aop) applyAroundAdvice(fname string, lines string) string {
 func (a *Aop) applyExecutionJP(fname string, stuff string) string {
 
 	rout := stuff
+
+	importsNeeded := []string{}
 
 	for i := 0; i < len(a.aspects); i++ {
 		aspect := a.aspects[i]
@@ -173,7 +186,20 @@ func (a *Aop) applyExecutionJP(fname string, stuff string) string {
 			}
 		}
 
+		fmt.Println("should be seeing some importz here..")
+		for t := 0; t < len(aspect.importz); t++ {
+			fmt.Println(aspect.importz[t])
+			importsNeeded = append(importsNeeded, aspect.importz[t])
+		}
 	}
+
+	fmt.Println("adding imports for realz..")
+	fmt.Println(len(importsNeeded))
+	// add any imports for this piece of advice applyExecutionJP
+	rout = a.writeMissingImports(fname, rout, importsNeeded)
+
+	fmt.Println("after adding imports")
+	fmt.Println(rout)
 
 	return rout
 }
@@ -185,7 +211,6 @@ func (a *Aop) applyExecutionJP(fname string, stuff string) string {
 // 2) order of arguments
 // 3) no args
 func containArgs(pk string, p []*ast.Field) bool {
-	fmt.Println(pk)
 
 	pk = strings.Split(pk, "(")[1]
 	pk = strings.Split(pk, ")")[0]
@@ -291,13 +316,36 @@ func (a *Aop) VisitFile(fp string, fi os.FileInfo, err error) error {
 		stuff := a.applyAroundAdvice(fp, lines)
 		a.writeOut(fp, stuff)
 
+		// provides advice matching against execution join points
 		stuff = a.applyExecutionJP(fp, stuff)
-
 		a.writeOut(fp, stuff)
 
 	}
 
 	return nil
+}
+
+func (a *Aop) writeMissingImports(fp string, out string, importsNeeded []string) string {
+	fmt.Println("adding missing Imports")
+	fmt.Println(importsNeeded)
+
+	out = a.addMissingImports(importsNeeded, out)
+
+	a.writeOut(fp, out)
+
+	// de-dupe imports
+	return a.reWorkImports(fp)
+}
+
+// reads file && de-dupes imports
+func (a *Aop) reWorkImports(fp string) string {
+	flines := fileLines(fp)
+	af := a.ParseAST(fp)
+	pruned := pruneImports(af)
+	lines := a.deDupeImports(fp, flines, pruned)
+	a.writeOut(fp, lines)
+
+	return lines
 }
 
 // deDupeImports de-dupes imports
@@ -470,11 +518,6 @@ func (a *Aop) build() {
 // line or returns an empty aspect
 func pointCutMatch(a []Aspect, l string) Aspect {
 	for i := 0; i < len(a); i++ {
-
-		// look for exact functions
-		//if strings.Contains(l, "func "+a[i].pointkut.def) {
-		//	return a[i]
-		//}
 
 		// look for go-routines
 		if strings.Contains(l, "go ") && ("go" == a[i].pointkut.def) {
@@ -687,6 +730,9 @@ func (a *Aop) reWriteFile(curfile string, out string, importsNeeded []string) {
 	}
 
 	defer f.Close()
+
+	fmt.Println("adding missing Imports")
+	fmt.Println(importsNeeded)
 
 	out = a.addMissingImports(importsNeeded, out)
 
