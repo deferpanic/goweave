@@ -570,8 +570,8 @@ func (a *Aop) transform() {
 	rootpkg := a.rootPkg()
 
 	for i := 0; i < len(fzs); i++ {
-		out, imports := a.txAspects(fzs[i], rootpkg)
-		a.reWriteFile(fzs[i], out, imports)
+		out := a.txAspects(fzs[i], rootpkg)
+		a.reWriteFile(fzs[i], out, []string{})
 	}
 }
 
@@ -582,8 +582,7 @@ func (a *Aop) transform() {
 //
 // adds any missing imports
 // modifies go routine advice
-func (a *Aop) txAspects(curfile string, rootpkg string) (string, []string) {
-	importsNeeded := []string{}
+func (a *Aop) txAspects(curfile string, rootpkg string) string {
 
 	file, err := os.Open(curfile)
 	if err != nil {
@@ -597,43 +596,15 @@ func (a *Aop) txAspects(curfile string, rootpkg string) (string, []string) {
 	// poor man's scope
 	scope := 0
 
-	// FIXME
-	// poor man's import parsing
-	inImport := false
-
 	cur_aspect := Aspect{}
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		l := scanner.Text()
 
-		// fix me - we can get these from the AST
-		if a.importBlock(l) || inImport {
-			inImport = true
-
-			if strings.Contains(l, "\"") {
-
-				if strings.Contains(l, rootpkg) {
-					l = a.rewriteImport(l, rootpkg)
-				}
-			}
-		}
-
-		// close us out of import block if we are done
-		if inImport {
-			if strings.Contains(l, ")") {
-				inImport = false
-			}
-		}
-
 		newAspect := pointCutMatch(a.aspects, l)
 		if newAspect.pointkut.def != "" {
 			scope += 1
-
-			// insert any imports we need to
-			for x := 0; x < len(newAspect.importz); x++ {
-				importsNeeded = append(importsNeeded, newAspect.importz[x])
-			}
 
 			cur_aspect = newAspect
 
@@ -707,7 +678,7 @@ func (a *Aop) txAspects(curfile string, rootpkg string) (string, []string) {
 		a.flog.Println(err)
 	}
 
-	return out, importsNeeded
+	return out
 }
 
 // reWriteFile rewrites curfile with out && adds any missing imports
@@ -755,15 +726,6 @@ func (a *Aop) addMissingImports(imports []string, out string) string {
 // relative path since we for now cp it to a diff. workspace
 func (a *Aop) rewriteImport(l string, rp string) string {
 	return strings.Replace(l, rp, ".", -1)
-}
-
-// importBlock detects if we are in an import statement or block
-func (a *Aop) importBlock(l string) bool {
-	if strings.Contains(l, "import") {
-		return true
-	} else {
-		return false
-	}
 }
 
 // findGoFiles recursively finds all go files in a project

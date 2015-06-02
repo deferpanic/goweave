@@ -96,7 +96,7 @@ func main() {
 
 	rootpkg := a.rootPkg()
 
-	after, _ := a.txAspects("/tmp/blah_test_go", rootpkg)
+	after := a.txAspects("/tmp/blah_test_go", rootpkg)
 
 	expected :=
 		`package main

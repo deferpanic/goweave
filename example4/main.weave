@@ -14,7 +14,7 @@ aspect {
 }
 
 aspect {
-  pointcut: execute(d(http.ResponseWriter, *http.Request))
+  pointcut: execute((http.ResponseWriter, *http.Request))
   advice: {
     before: {
       fmt.Println("before call")

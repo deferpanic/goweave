@@ -3,17 +3,13 @@
 * get rid of examples once regex stuff is completely moved over..
 
 * remove the regex stuff
-  -- think we can do this by just commenting out the pointcut match &&
-the http only pointcut match
-
-  -- looked at this - the go-routine test is the only thing failing if
-we do this and it is fialing cause the ast parser will prob. bitch..
-
-  -- maybe punt this to an integration style test for now ??
+  -- need to port goroutine stuff
 
 * remove the fset warnings by making sure we add imports correctly.
 
 * transfer the rest of the examples to working tests
+  -- ex1 is mostly done...
+  -- ex2 .. ex4 needs to be converted to tests
 
 * probably change the call/around advice in the http example
   -- right now it's just replacing - we want to show true around usage
