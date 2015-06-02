@@ -356,15 +356,233 @@ func TestContainArgs(t *testing.T) {
 }
 
 func TestApplyExecutionJPMain(t *testing.T) {
+	f1 := `package main
+
+import (
+	"fmt"
+)
+
+func main() {
+	fmt.Println("test of the microphone")
+}`
+
+	expected := `package main
+
+import (
+	"fmt"
+)
+
+func main() {
+fmt.Println("before main")
+	fmt.Println("test of the microphone")
+}
+`
+
+	aop := &Aop{}
+
+	aop.writeOut("/tmp/blah", f1)
+
+	aspect := Aspect{
+		advize: Advice{
+			before: "fmt.Println(\"before main\")",
+		},
+		pointkut: Pointcut{
+			def:  "main()",
+			kind: 2,
+		},
+	}
+
+	aspects := []Aspect{}
+	aspects = append(aspects, aspect)
+	aop.aspects = aspects
+
+	after := aop.applyExecutionJP("/tmp/blah", f1)
+
+	if after != expected {
+		t.Error(after)
+		t.Error(expected)
+		t.Error("applyExecutionJP is not transforming correctly")
+	}
+
 }
 
 func TestApplyExecutionJPBefore(t *testing.T) {
+	f1 := `package main
+
+import (
+	"fmt"
+)
+
+func beforeBob() {
+	fmt.Println("bob")
+}
+
+func main() {
+	beforeBob()
+}`
+
+	expected := `package main
+
+import (
+	"fmt"
+)
+
+func beforeBob() {
+fmt.Println("before bob")
+	fmt.Println("bob")
+}
+
+func main() {
+	beforeBob()
+}
+`
+
+	aop := &Aop{}
+
+	aop.writeOut("/tmp/blah", f1)
+
+	aspect := Aspect{
+		advize: Advice{
+			before: "fmt.Println(\"before bob\")",
+		},
+		pointkut: Pointcut{
+			def:  "beforeBob()",
+			kind: 2,
+		},
+	}
+
+	aspects := []Aspect{}
+	aspects = append(aspects, aspect)
+	aop.aspects = aspects
+
+	after := aop.applyExecutionJP("/tmp/blah", f1)
+
+	if after != expected {
+		t.Error(after)
+		t.Error(expected)
+		t.Error("applyExecutionJP is not transforming correctly")
+	}
+
 }
 
 func TestApplyExecutionJPAfter(t *testing.T) {
+	f1 := `package main
+
+import (
+	"fmt"
+)
+
+func afterAnny() {
+	fmt.Println("anny")
+}
+
+func main() {
+	afterAnny()
+}`
+
+	expected := `package main
+
+import (
+	"fmt"
+)
+
+func afterAnny() {
+	fmt.Println("anny")
+fmt.Println("after anny")
+}
+
+func main() {
+	afterAnny()
+}
+`
+
+	aop := &Aop{}
+
+	aop.writeOut("/tmp/blah", f1)
+
+	aspect := Aspect{
+		advize: Advice{
+			after: "fmt.Println(\"after anny\")",
+		},
+		pointkut: Pointcut{
+			def:  "afterAnny()",
+			kind: 2,
+		},
+	}
+
+	aspects := []Aspect{}
+	aspects = append(aspects, aspect)
+	aop.aspects = aspects
+
+	after := aop.applyExecutionJP("/tmp/blah", f1)
+
+	if after != expected {
+		t.Error(after)
+		t.Error(expected)
+		t.Error("applyExecutionJP is not transforming correctly")
+	}
+
 }
 
 func TestApplyExecutionJPAround(t *testing.T) {
+	f1 := `package main
+
+import (
+	"fmt"
+)
+
+func aroundArnie() {
+	fmt.Println("arnie")
+}
+
+func main() {
+	aroundArnie()
+}`
+
+	expected := `package main
+
+import (
+	"fmt"
+)
+
+func aroundArnie() {
+fmt.Println("before arnie")
+	fmt.Println("arnie")
+fmt.Println("after arnie")
+}
+
+func main() {
+	aroundArnie()
+}
+`
+
+	aop := &Aop{}
+
+	aop.writeOut("/tmp/blah", f1)
+
+	aspect := Aspect{
+		advize: Advice{
+			before: "fmt.Println(\"before arnie\")",
+			after:  "fmt.Println(\"after arnie\")",
+		},
+		pointkut: Pointcut{
+			def:  "aroundArnie()",
+			kind: 2,
+		},
+	}
+
+	aspects := []Aspect{}
+	aspects = append(aspects, aspect)
+	aop.aspects = aspects
+
+	after := aop.applyExecutionJP("/tmp/blah", f1)
+
+	if after != expected {
+		t.Error(after)
+		t.Error(expected)
+		t.Error("applyExecutionJP is not transforming correctly")
+	}
+
 }
 
 func TestApplyExecutionJPInnerFors(t *testing.T) {

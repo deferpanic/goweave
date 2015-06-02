@@ -1,5 +1,7 @@
 ### TODO - shortlist before opening up
 
+* get rid of examples once regex stuff is completely moved over..
+
 * remove the regex stuff
   -- think we can do this by just commenting out the pointcut match &&
 the http only pointcut match

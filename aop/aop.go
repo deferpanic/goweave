@@ -145,10 +145,8 @@ func (a *Aop) applyExecutionJP(fname string, stuff string) string {
 			}
 
 			fpk := strings.Split(pk, "(")[0]
-			fmt.Println("name")
-			fmt.Println(fn.Name)
 
-			// if function missing --> wildcard
+			// if function name missing --> wildcard
 			if fpk == "" {
 				fpk = fn.Name.Name
 			}
@@ -163,7 +161,6 @@ func (a *Aop) applyExecutionJP(fname string, stuff string) string {
 				// advice need to be accounted for w/begin
 
 				if before_advice != "" {
-					fmt.Println("inserting" + before_advice + " " + pk)
 					rout = a.insertShit(fname, begin+linecnt, before_advice)
 					linecnt += strings.Count(before_advice, "\n") + 1
 				}
