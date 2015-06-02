@@ -1,6 +1,7 @@
 package aop
 
 import (
+	"go/ast"
 	"testing"
 )
 
@@ -45,6 +46,107 @@ func main() {
 	}
 
 }
+
+func TestGoTx(t *testing.T) {
+	a := &Aop{}
+
+	f1 := `package main
+
+import (
+	"fmt"
+	"time"
+)
+
+func stuff() {
+	panic("panic")
+}
+
+func blah() {
+	stuff()
+	fmt.Println("never get here")
+}
+
+func main() {
+	go blah()
+
+	go func() {
+		fmt.Println("inline")
+		blah()
+	}()
+
+	time.Sleep(1 * time.Second)
+}`
+
+	a.writeOut("/tmp/blah_test_go", f1)
+
+	aspect2 := Aspect{
+		advize: Advice{
+			before: "defer dps.Persist()\nfmt.Println(\"there is no need to panic\")",
+		},
+		pointkut: Pointcut{
+			def: "go",
+		},
+	}
+
+	aspects := []Aspect{}
+
+	aspects = append(aspects, aspect2)
+
+	a.aspects = aspects
+
+	rootpkg := a.rootPkg()
+
+	after, _ := a.txAspects("/tmp/blah_test_go", rootpkg)
+
+	expected :=
+		`package main
+
+import (
+	"fmt"
+	"time"
+)
+
+func stuff() {
+	panic("panic")
+
+}
+
+func blah() {
+	stuff()
+	fmt.Println("never get here")
+
+}
+
+func main() {
+	go func(){
+defer dps.Persist()
+fmt.Println("there is no need to panic")
+blah()
+}()
+
+go func(){
+defer dps.Persist()
+fmt.Println("there is no need to panic")
+		fmt.Println("inline")
+		blah()
+
+}()
+
+	time.Sleep(1 * time.Second)
+
+}
+`
+	if after != expected {
+		t.Error("\n" + "#" + after + "#")
+		t.Error("\n" + "#" + expected + "#")
+		t.Error("txAspects is not transforming correctly")
+	}
+
+}
+
+/*
+
+FIXME FIXME FIXME
 
 func TestGoTx(t *testing.T) {
 	a := &Aop{}
@@ -162,6 +264,7 @@ fmt.Println("there is no need to panic")
 	}
 
 }
+*/
 
 func TestApplyExecutionJP(t *testing.T) {
 
@@ -224,7 +327,7 @@ func main() {
 			after:  "fmt.Println(\"after call\")",
 		},
 		pointkut: Pointcut{
-			def:  "d(http.ResponseWriter, *http.Request)",
+			def:  "(http.ResponseWriter, *http.Request)",
 			kind: 2,
 		},
 	}
@@ -242,3 +345,116 @@ func main() {
 	}
 
 }
+
+func TestContainArgs(t *testing.T) {
+
+	fields := []*ast.Field{}
+
+	if containArgs("main()", fields) != true {
+		t.Error("fuck")
+	}
+}
+
+func TestApplyExecutionJPMain(t *testing.T) {
+}
+
+func TestApplyExecutionJPBefore(t *testing.T) {
+}
+
+func TestApplyExecutionJPAfter(t *testing.T) {
+}
+
+func TestApplyExecutionJPAround(t *testing.T) {
+}
+
+func TestApplyExecutionJPInnerFors(t *testing.T) {
+}
+
+func TestApplyExecutionJPRetStr(t *testing.T) {
+}
+
+func TestApplyExecutionJPRetBool(t *testing.T) {
+}
+
+func TestApplyExecutionJPSubPkg(t *testing.T) {
+}
+
+/*
+	f1 := `package main
+
+import (
+	"net/http"
+)
+
+// panic test
+func panicHandler(w http.ResponseWriter, r *http.Request) {
+	panic("there is no need to panic")
+}
+
+func panic2Handler(w http.ResponseWriter, r *http.Request) {
+	panic("there is no need to panic")
+}
+
+func main() {
+	http.HandleFunc("/panic", panicHandler)
+	http.HandleFunc("/panic2", panic2Handler)
+
+	http.ListenAndServe(":3000", nil)
+}`
+
+	expected := `package main
+
+import (
+	"net/http"
+)
+
+// panic test
+func panicHandler(w http.ResponseWriter, r *http.Request) {
+fmt.Println("before call")
+	panic("there is no need to panic")
+fmt.Println("after call")
+}
+
+func panic2Handler(w http.ResponseWriter, r *http.Request) {
+fmt.Println("before call")
+	panic("there is no need to panic")
+fmt.Println("after call")
+}
+
+func main() {
+	http.HandleFunc("/panic", panicHandler)
+	http.HandleFunc("/panic2", panic2Handler)
+
+	http.ListenAndServe(":3000", nil)
+}
+`
+
+	aop := &Aop{}
+
+	aop.writeOut("/tmp/blah", f1)
+
+	aspect := Aspect{
+		advize: Advice{
+			before: "fmt.Println(\"before call\")",
+			after:  "fmt.Println(\"after call\")",
+		},
+		pointkut: Pointcut{
+			def:  "(http.ResponseWriter, *http.Request)",
+			kind: 2,
+		},
+	}
+
+	aspects := []Aspect{}
+	aspects = append(aspects, aspect)
+	aop.aspects = aspects
+
+	after := aop.applyExecutionJP("/tmp/blah", f1)
+
+	if after != expected {
+		t.Error(after)
+		t.Error(expected)
+		t.Error("applyExecutionJP is not transforming correctly")
+	}
+
+}
+*/

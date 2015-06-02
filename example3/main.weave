@@ -1,5 +1,5 @@
 aspect {
-  pointcut: execute(main)
+  pointcut: execute(main())
   imports (
     "fmt"
     "github.com/deferpanic/deferclient/deferstats"

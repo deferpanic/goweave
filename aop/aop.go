@@ -125,12 +125,6 @@ func (a *Aop) applyExecutionJP(fname string, stuff string) string {
 
 		pk := aspect.pointkut.def
 
-		// locking down this tmp for now...
-		//   pointcut: d(http.ResponseWriter, *http.Request)
-		if !strings.Contains(pk, "http.ResponseWriter") {
-			continue
-		}
-
 		before_advice := aspect.advize.before
 		after_advice := aspect.advize.after
 
@@ -150,7 +144,16 @@ func (a *Aop) applyExecutionJP(fname string, stuff string) string {
 				continue
 			}
 
-			if containArgs(pk, fn.Type.Params.List) {
+			fpk := strings.Split(pk, "(")[0]
+			fmt.Println("name")
+			fmt.Println(fn.Name)
+
+			// if function missing --> wildcard
+			if fpk == "" {
+				fpk = fn.Name.Name
+			}
+
+			if fn.Name.Name == fpk && containArgs(pk, fn.Type.Params.List) {
 
 				// begin line
 				begin := fset.Position(fn.Body.Lbrace).Line
@@ -160,6 +163,7 @@ func (a *Aop) applyExecutionJP(fname string, stuff string) string {
 				// advice need to be accounted for w/begin
 
 				if before_advice != "" {
+					fmt.Println("inserting" + before_advice + " " + pk)
 					rout = a.insertShit(fname, begin+linecnt, before_advice)
 					linecnt += strings.Count(before_advice, "\n") + 1
 				}
@@ -182,11 +186,18 @@ func (a *Aop) applyExecutionJP(fname string, stuff string) string {
 // arguments && it ignores simple strings -- FIXME
 // 1) simple types - no pkgs
 // 2) order of arguments
+// 3) no args
 func containArgs(pk string, p []*ast.Field) bool {
+	fmt.Println(pk)
+
 	pk = strings.Split(pk, "(")[1]
 	pk = strings.Split(pk, ")")[0]
 
 	argz := strings.Split(pk, ",")
+
+	if (len(argz) == 1) && (argz[0] == "") {
+		argz = []string{}
+	}
 
 	// early bail if mis-matched argc
 	if len(argz) != len(p) {
@@ -197,6 +208,7 @@ func containArgs(pk string, p []*ast.Field) bool {
 
 	// for now we ignore simple args like string, int
 	// also - these are un-ordered right now..
+	// also - no support for no args
 	for i := 0; i < len(argz); i++ {
 		s := strings.Split(argz[i], ".")
 		pkg := strings.TrimSpace(s[0])
@@ -463,9 +475,9 @@ func pointCutMatch(a []Aspect, l string) Aspect {
 	for i := 0; i < len(a); i++ {
 
 		// look for exact functions
-		if strings.Contains(l, "func "+a[i].pointkut.def) {
-			return a[i]
-		}
+		//if strings.Contains(l, "func "+a[i].pointkut.def) {
+		//	return a[i]
+		//}
 
 		// look for go-routines
 		if strings.Contains(l, "go ") && ("go" == a[i].pointkut.def) {

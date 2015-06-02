@@ -143,7 +143,7 @@ To try things out first try running `go build`. Then try running `goweave`.
 #### Before Function
 ```go
 aspect {
-  pointcut: execute(beforeBob)
+  pointcut: execute(beforeBob())
   advice: {
     before: {
       fmt.Println("before bob")
@@ -155,7 +155,7 @@ aspect {
 #### After Function
 ```
 aspect {
-  pointcut: execute(afterSally)
+  pointcut: execute(afterSally())
   advice: {
     after: {
       fmt.Println("after sally")
@@ -251,14 +251,14 @@ change "heavily".
 
   * explicit method name
     ```go
-      call(blah)
+      call(blah())
     ```
 
     ```go
-      execute(blah)
+      execute(blah())
     ```
 
-  TODO
+  TODO - doesn't work yet
   * partial match method name
     ```go
       call(b.*)
@@ -275,21 +275,24 @@ change "heavily".
 
   * wildcard function name w/explicit arguments
       execute((w http.ResponseWriter, r *http.Request))
- 
+
+  TODO - doesn't work yet 
   * sub-pkg && method name
     ```go
-      execute(pkg/blah)
+      execute(pkg/blah())
     ```
 
+  TODO - doesn't work yet
   * sub-pkg && struct && method-name
     ```go
-      execute(pkg/struct.b)
+      execute(pkg/struct.b())
     ```
 
+  TODO - doesn't work yet
   note - you have to have the AST for this
   * struct && method name
     ```go
-      execute(struct.b)
+      execute(struct.b())
     ```
 
 
@@ -378,6 +381,8 @@ change "heavily".
   ```go
   gofmt -r 'bytes.Compare(a, b) == 0 -> bytes.Equal(a, b)'
   ```
+
+* why not go tags?
 
 * Why not do everything via the AST?
   I think we want to move all the regexen to AST. This started out as a
