@@ -138,7 +138,7 @@ func (a *Aop) transform() {
 	rootpkg := a.rootPkg()
 
 	for i := 0; i < len(fzs); i++ {
-		out := a.txAspects(fzs[i], rootpkg)
+		out := a.processGoRoutines(fzs[i], rootpkg)
 		a.reWriteFile(fzs[i], out, []string{})
 	}
 }

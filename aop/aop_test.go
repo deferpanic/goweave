@@ -105,7 +105,7 @@ func main() {
 
 	rootpkg := a.rootPkg()
 
-	after := a.txAspects("/tmp/blah_test_go", rootpkg)
+	after := a.processGoRoutines("/tmp/blah_test_go", rootpkg)
 
 	expected :=
 		`package main
@@ -146,7 +146,7 @@ fmt.Println("there is no need to panic")
 	if after != expected {
 		t.Error("\n" + "#" + after + "#")
 		t.Error("\n" + "#" + expected + "#")
-		t.Error("txAspects is not transforming correctly")
+		t.Error("processGoRoutines is not transforming correctly")
 	}
 
 }

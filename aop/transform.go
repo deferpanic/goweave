@@ -118,12 +118,12 @@ func (a *Aop) applyExecutionJP(fname string, stuff string) string {
 				// advice need to be accounted for w/begin
 
 				if before_advice != "" {
-					rout = a.insertShit(fname, begin+linecnt, before_advice)
+					rout = a.writeAtLine(fname, begin+linecnt, before_advice)
 					linecnt += strings.Count(before_advice, "\n") + 1
 				}
 
 				if after_advice != "" {
-					rout = a.insertShit(fname, after+linecnt-1, after_advice)
+					rout = a.writeAtLine(fname, after+linecnt-1, after_advice)
 					linecnt += strings.Count(after_advice, "\n") + 1
 				}
 

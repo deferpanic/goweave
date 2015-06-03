@@ -6,8 +6,6 @@
   - logging
   - static validation
 
-* separate our build stuff into build.go
-
 * get go-routines working w/out regex
 
 * make our tests agnostic..

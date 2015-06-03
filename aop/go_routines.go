@@ -26,11 +26,11 @@ func singleLineGo(l string) bool {
 	return false
 }
 
-// txAspects is in the process of being deprecated
+// processGoRoutines is in the process of being deprecated
 // it only provides regex support for go before/after advice
 // once we refactor to AST replacing the go routines this function will
 // go away
-func (a *Aop) txAspects(curfile string, rootpkg string) string {
+func (a *Aop) processGoRoutines(curfile string, rootpkg string) string {
 
 	file, err := os.Open(curfile)
 	if err != nil {

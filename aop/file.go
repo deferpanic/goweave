@@ -57,9 +57,8 @@ func (a *Aop) writeOut(path string, nlines string) {
 	}
 }
 
-// insertShit inserts writes to fname lntxt @ iline
-func (a *Aop) insertShit(fname string, iline int, lntxt string) string {
-	// insert that shit for front concern
+// writeAtLine inserts writes to fname lntxt @ iline
+func (a *Aop) writeAtLine(fname string, iline int, lntxt string) string {
 	flines := fileLines(fname)
 
 	out := ""
