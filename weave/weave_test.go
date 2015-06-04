@@ -106,7 +106,7 @@ func main() {
 
 	rootpkg := w.rootPkg()
 
-	after := w.processGoRoutines("/tmp/blah_test_go", rootpkg)
+	after, _ := w.processGoRoutines("/tmp/blah_test_go", rootpkg)
 
 	expected :=
 		`package main
@@ -405,6 +405,67 @@ func main() {
 	if after != expected {
 		t.Error(after)
 		t.Error(expected)
+		t.Error("applyExecutionJP is not transforming correctly")
+	}
+
+}
+
+func TestApplyExecutionJPAfterwReturn(t *testing.T) {
+	f1 := `package main
+
+import (
+	"fmt"
+)
+
+func afterwReturn() int {
+	fmt.Println("anny")
+	return 1
+}
+
+func main() {
+	afterAnny()
+}`
+
+	expected := `package main
+
+import (
+	"fmt"
+)
+
+func afterwReturn() int {
+	fmt.Println("anny")
+fmt.Println("after anny")
+	return 1
+}
+
+func main() {
+	afterAnny()
+}
+`
+
+	w := &Weave{}
+
+	w.writeOut("/tmp/blah", f1)
+
+	aspect := Aspect{
+		advize: Advice{
+			after: "fmt.Println(\"after anny\")",
+		},
+		pointkut: Pointcut{
+			def:  "afterwReturn()",
+			kind: 2,
+		},
+	}
+
+	aspects := []Aspect{}
+	aspects = append(aspects, aspect)
+	w.aspects = aspects
+
+	after := w.applyExecutionJP("/tmp/blah", f1)
+
+	if after != expected {
+		t.Error("##" + after + "##")
+		t.Error("##" + expected + "##")
 		t.Error("applyExecutionJP is not transforming correctly")
 	}
 

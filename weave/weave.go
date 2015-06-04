@@ -78,7 +78,6 @@ func (w *Weave) VisitFile(fp string, fi os.FileInfo, err error) error {
 	}
 
 	if matched {
-		fmt.Println("looking at file " + fp)
 
 		// provides 'around' style advice
 		stuff := w.applyAroundAdvice(fp)

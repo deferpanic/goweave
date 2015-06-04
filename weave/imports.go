@@ -4,7 +4,6 @@
 package weave
 
 import (
-	"fmt"
 	"strings"
 
 	"go/ast"

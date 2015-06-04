@@ -2,7 +2,6 @@ package weave
 
 import (
 	"bytes"
-	"fmt"
 	"go/ast"
 	"go/format"
 	"go/parser"
@@ -65,7 +64,6 @@ func (w *Weave) applyAroundAdvice(fname string) string {
 
 	if len(importsNeeded) > 0 {
 		// add any imports for this piece of advice
-		fmt.Println("writing missing improts to " + fname)
 		stuff = w.writeMissingImports(fname, stuff, importsNeeded)
 	}
 
@@ -128,7 +126,12 @@ func (w *Weave) applyExecutionJP(fname string, stuff string) string {
 				}
 
 				if after_advice != "" {
-					rout = w.writeAtLine(fname, after+linecnt-1, after_advice)
+					if fn.Type.Results != nil {
+						rout = w.writeAtLine(fname, after+linecnt-2, after_advice)
+					} else {
+						rout = w.writeAtLine(fname, after+linecnt-1, after_advice)
+					}
+
 					linecnt += strings.Count(after_advice, "\n") + 1
 				}
 
@@ -143,7 +146,6 @@ func (w *Weave) applyExecutionJP(fname string, stuff string) string {
 
 	if len(importsNeeded) > 0 {
 		// add any imports for this piece of advice applyExecutionJP
-		fmt.Println("writing missing improts to " + fname)
 		rout = w.writeMissingImports(fname, rout, importsNeeded)
 	}
 
