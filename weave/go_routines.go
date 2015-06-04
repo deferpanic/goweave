@@ -31,7 +31,8 @@ func singleLineGo(l string) bool {
 // once we refactor to AST replacing the go routines this function will
 // go away
 // this does not write to any files - simply manipulates text
-func (w *Weave) processGoRoutines(curfile string, rootpkg string) string {
+func (w *Weave) processGoRoutines(curfile string, rootpkg string) (string, bool) {
+	modified := false
 
 	file, err := os.Open(curfile)
 	if err != nil {
@@ -53,6 +54,8 @@ func (w *Weave) processGoRoutines(curfile string, rootpkg string) string {
 
 		newAspect := pointCutMatch(w.aspects, l)
 		if newAspect.pointkut.def != "" {
+			modified = true
+
 			scope += 1
 
 			cur_aspect = newAspect
@@ -127,5 +130,5 @@ func (w *Weave) processGoRoutines(curfile string, rootpkg string) string {
 		w.flog.Println(err)
 	}
 
-	return out
+	return out, modified
 }

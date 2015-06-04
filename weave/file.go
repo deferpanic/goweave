@@ -27,6 +27,15 @@ func (w *Weave) reWriteFile(curfile string, out string, importsNeeded []string) 
 	}
 }
 
+func fileAsStr(path string) string {
+	buf, err := ioutil.ReadFile(path)
+	if err != nil {
+		log.Println(err)
+	}
+
+	return string(buf)
+}
+
 // returns a slice of lines from file path
 func fileLines(path string) []string {
 	stuff := []string{}

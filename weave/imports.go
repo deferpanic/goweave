@@ -19,6 +19,9 @@ type weaveImport struct {
 func (w *Weave) reWorkImports(fp string) string {
 	flines := fileLines(fp)
 	af := w.ParseAST(fp)
+
+	fmt.Println("reworking " + fp)
+
 	pruned := w.pruneImports(af, w.rootPkg())
 	lines := w.deDupeImports(fp, flines, pruned)
 	w.writeOut(fp, lines)
@@ -90,16 +93,7 @@ func (w *Weave) pruneImports(f *ast.File, rootpkg string) []*ast.ImportSpec {
 
 			l := f.Imports[i].Path.Value
 
-			/*
-				if strings.Contains(l, "pq") {
-					fmt.Println("found pq")
-					fmt.Println(f.Imports[i].Name)
-					fmt.Println(f.Imports[i])
-				}
-			*/
-
 			if strings.Contains(l, rootpkg) && !strings.Contains(l, "_weave") {
-				fmt.Println("my current root is " + rootpkg)
 				f.Imports[i].Path.Value = rewriteImport(l, rootpkg)
 				fmt.Println("rewrote improt to " + f.Imports[i].Path.Value)
 			}

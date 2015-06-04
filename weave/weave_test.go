@@ -21,7 +21,8 @@ func main() {
 
 	expected := `package main
 
-import ("net/http"
+import (
+	"net/http"
 )
 
 func main() {
@@ -46,7 +47,7 @@ func main() {
 	aspects = append(aspects, aspect)
 	w.aspects = aspects
 
-	after := w.applyAroundAdvice("/tmp/blah", f1)
+	after := w.applyAroundAdvice("/tmp/blah")
 
 	if after != expected {
 		t.Error(after)
@@ -177,8 +178,9 @@ func main() {
 
 	expected := `package main
 
-import ("fmt"
-"net/http"
+import (
+	"fmt"
+	"net/http"
 )
 
 func hiHandler(w http.ResponseWriter, r *http.Request) {
@@ -252,7 +254,8 @@ func main() {
 
 	expected := `package main
 
-import ("fmt"
+import (
+	"fmt"
 )
 
 func main() {
@@ -306,7 +309,8 @@ func main() {
 
 	expected := `package main
 
-import ("fmt"
+import (
+	"fmt"
 )
 
 func beforeBob() {
@@ -364,7 +368,8 @@ func main() {
 
 	expected := `package main
 
-import ("fmt"
+import (
+	"fmt"
 )
 
 func afterAnny() {
@@ -422,7 +427,8 @@ func main() {
 
 	expected := `package main
 
-import ("fmt"
+import (
+	"fmt"
 )
 
 func aroundArnie() {
@@ -482,7 +488,8 @@ func main() {
 
 	expected := `package main
 
-import ("fmt"
+import (
+	"fmt"
 )
 
 func innerFors() {
@@ -542,7 +549,8 @@ func main() {
 
 	expected := `package main
 
-import ("fmt"
+import (
+	"fmt"
 )
 
 func retStr() {
@@ -604,7 +612,8 @@ func main() {
 
 	expected := `package main
 
-import ("fmt"
+import (
+	"fmt"
 )
 
 func retBool() bool {
@@ -668,8 +677,8 @@ func main() {
 
 	pruned := w.pruneImports(af, s)
 
-	if pruned[0] != "\"_weave/github.com/some/stuff/subpkg\"" {
-		t.Error(pruned[0])
+	if pruned[0].Path.Value != "\"_weave/github.com/some/stuff/subpkg\"" {
+		t.Error(pruned[0].Path.Value)
 		t.Error("pruneImports not working")
 	}
 
@@ -691,8 +700,8 @@ func main() {
 
 	pruned = w.pruneImports(af, s)
 
-	if pruned[0] != "\"_weave/github.com/some/stuff/otherpkg\"" {
-		t.Error(pruned[0])
+	if pruned[0].Path.Value != "\"_weave/github.com/some/stuff/otherpkg\"" {
+		t.Error(pruned[0].Path.Value)
 		t.Error("pruneImports not working")
 	}
 

@@ -80,10 +80,8 @@ func (w *Weave) VisitFile(fp string, fi os.FileInfo, err error) error {
 	if matched {
 		fmt.Println("looking at file " + fp)
 
-		lines := w.reWorkImports(fp)
-
 		// provides 'around' style advice
-		stuff := w.applyAroundAdvice(fp, lines)
+		stuff := w.applyAroundAdvice(fp)
 		w.writeOut(fp, stuff)
 
 		// provides advice matching against execution join points
@@ -150,9 +148,18 @@ func (w *Weave) transform() {
 	rootpkg := w.rootPkg()
 
 	for i := 0; i < len(fzs); i++ {
-		out := w.processGoRoutines(fzs[i], rootpkg)
-		w.reWriteFile(fzs[i], out, []string{})
+		out, b := w.processGoRoutines(fzs[i], rootpkg)
+
+		// FIXME
+		if b {
+			fmt.Println("transforming imports in goroutine match" + fzs[i])
+			w.reWriteFile(fzs[i], out, []string{})
+			w.reWorkImports(fzs[i])
+		} else {
+			w.reWriteFile(fzs[i], out, []string{})
+		}
 	}
+
 }
 
 // findGoFiles recursively finds all go files in a project

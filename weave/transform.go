@@ -2,6 +2,7 @@ package weave
 
 import (
 	"bytes"
+	"fmt"
 	"go/ast"
 	"go/format"
 	"go/parser"
@@ -18,9 +19,10 @@ import (
 // looks for call joinpoints && provides around advice capability
 //
 // this is currently a hack to support deferpanic's http lib
-func (w *Weave) applyAroundAdvice(fname string, lines string) string {
+func (w *Weave) applyAroundAdvice(fname string) string {
 
-	stuff := lines
+	stuff := fileAsStr(fname)
+
 	importsNeeded := []string{}
 
 	for i := 0; i < len(w.aspects); i++ {
@@ -30,7 +32,7 @@ func (w *Weave) applyAroundAdvice(fname string, lines string) string {
 			around_advice := aspect.advize.around
 
 			fset := token.NewFileSet()
-			file, err := parser.ParseFile(fset, fname, lines, parser.Mode(0))
+			file, err := parser.ParseFile(fset, fname, stuff, parser.Mode(0))
 			if err != nil {
 				w.flog.Println("Failed to parse source: %s", err.Error())
 			}
@@ -63,6 +65,7 @@ func (w *Weave) applyAroundAdvice(fname string, lines string) string {
 
 	if len(importsNeeded) > 0 {
 		// add any imports for this piece of advice
+		fmt.Println("writing missing improts to " + fname)
 		stuff = w.writeMissingImports(fname, stuff, importsNeeded)
 	}
 
@@ -129,16 +132,18 @@ func (w *Weave) applyExecutionJP(fname string, stuff string) string {
 					linecnt += strings.Count(after_advice, "\n") + 1
 				}
 
+				for t := 0; t < len(aspect.importz); t++ {
+					importsNeeded = append(importsNeeded, aspect.importz[t])
+				}
+
 			}
 		}
 
-		for t := 0; t < len(aspect.importz); t++ {
-			importsNeeded = append(importsNeeded, aspect.importz[t])
-		}
 	}
 
 	if len(importsNeeded) > 0 {
 		// add any imports for this piece of advice applyExecutionJP
+		fmt.Println("writing missing improts to " + fname)
 		rout = w.writeMissingImports(fname, rout, importsNeeded)
 	}
 
