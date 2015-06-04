@@ -20,8 +20,6 @@ func (w *Weave) reWorkImports(fp string) string {
 	flines := fileLines(fp)
 	af := w.ParseAST(fp)
 
-	fmt.Println("reworking " + fp)
-
 	pruned := w.pruneImports(af, w.rootPkg())
 	lines := w.deDupeImports(fp, flines, pruned)
 	w.writeOut(fp, lines)
@@ -50,6 +48,11 @@ func (w *Weave) deDupeImports(path string, flines []string, pruned []*ast.Import
 				} else {
 					nlines += pruned[x].Path.Value + "\n"
 				}
+			}
+
+			// empty import check
+			if strings.Contains(flines[i], "()") {
+				inImport = false
 			}
 
 			continue
@@ -95,7 +98,6 @@ func (w *Weave) pruneImports(f *ast.File, rootpkg string) []*ast.ImportSpec {
 
 			if strings.Contains(l, rootpkg) && !strings.Contains(l, "_weave") {
 				f.Imports[i].Path.Value = rewriteImport(l, rootpkg)
-				fmt.Println("rewrote improt to " + f.Imports[i].Path.Value)
 			}
 
 			if !inthere(f.Imports[i].Path.Value, pruned) {

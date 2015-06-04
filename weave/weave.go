@@ -154,7 +154,6 @@ func (w *Weave) transform() {
 		if b {
 			fmt.Println("transforming imports in goroutine match" + fzs[i])
 			w.reWriteFile(fzs[i], out, []string{})
-			w.reWorkImports(fzs[i])
 		} else {
 			w.reWriteFile(fzs[i], out, []string{})
 		}

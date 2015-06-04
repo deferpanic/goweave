@@ -10,7 +10,9 @@ import (
 // reWriteFile rewrites curfile with out && adds any missing imports
 func (w *Weave) reWriteFile(curfile string, out string, importsNeeded []string) {
 
-	f, err := os.Create(w.buildLocation + "/" + curfile)
+	path := w.buildLocation + "/" + curfile
+
+	f, err := os.Create(path)
 	if err != nil {
 		w.flog.Println(err)
 	}
@@ -25,6 +27,9 @@ func (w *Weave) reWriteFile(curfile string, out string, importsNeeded []string) 
 	if err != nil {
 		w.flog.Println(err)
 	}
+
+	w.reWorkImports(path)
+
 }
 
 func fileAsStr(path string) string {
