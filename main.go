@@ -13,7 +13,7 @@ const (
 func main() {
 	log.Println("goweave " + version)
 
-	w := aop.NewWeave()
+	w := weave.NewWeave()
 	w.Run()
 
 }

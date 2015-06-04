@@ -1,4 +1,4 @@
-package aop
+package weave
 
 import (
 	"bufio"
@@ -10,14 +10,16 @@ import (
 // reWriteFile rewrites curfile with out && adds any missing imports
 func (w *Weave) reWriteFile(curfile string, out string, importsNeeded []string) {
 
-	f, err := os.Create(w.tmpLocation() + "/" + curfile)
+	f, err := os.Create(w.buildLocation + "/" + curfile)
 	if err != nil {
 		w.flog.Println(err)
 	}
 
 	defer f.Close()
 
-	out = w.addMissingImports(importsNeeded, out)
+	if len(importsNeeded) > 0 {
+		out = w.addMissingImports(importsNeeded, out)
+	}
 
 	_, err = f.WriteString(out)
 	if err != nil {
@@ -25,7 +27,7 @@ func (w *Weave) reWriteFile(curfile string, out string, importsNeeded []string) 
 	}
 }
 
-// returns a slice of lines
+// returns a slice of lines from file path
 func fileLines(path string) []string {
 	stuff := []string{}
 

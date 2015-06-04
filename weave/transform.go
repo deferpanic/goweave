@@ -1,4 +1,4 @@
-package aop
+package weave
 
 import (
 	"bytes"
@@ -61,8 +61,10 @@ func (w *Weave) applyAroundAdvice(fname string, lines string) string {
 		}
 	}
 
-	// add any imports for this piece of advice
-	stuff = w.writeMissingImports(fname, stuff, importsNeeded)
+	if len(importsNeeded) > 0 {
+		// add any imports for this piece of advice
+		stuff = w.writeMissingImports(fname, stuff, importsNeeded)
+	}
 
 	return stuff
 }
@@ -135,8 +137,10 @@ func (w *Weave) applyExecutionJP(fname string, stuff string) string {
 		}
 	}
 
-	// add any imports for this piece of advice applyExecutionJP
-	rout = w.writeMissingImports(fname, rout, importsNeeded)
+	if len(importsNeeded) > 0 {
+		// add any imports for this piece of advice applyExecutionJP
+		rout = w.writeMissingImports(fname, rout, importsNeeded)
+	}
 
 	return rout
 }

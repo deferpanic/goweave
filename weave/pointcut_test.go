@@ -1,4 +1,4 @@
-package aop
+package weave
 
 import (
 	"testing"

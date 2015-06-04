@@ -459,6 +459,8 @@ else.
   - most of the regex/line scanning should be converted to AST node
     replacement
 
+* add support for matching function declaration w/returns
+
 * import vendoring/re-writing
 
 * better error handling

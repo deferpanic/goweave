@@ -1,4 +1,4 @@
-package aop
+package weave
 
 import (
 	"bufio"
@@ -30,6 +30,7 @@ func singleLineGo(l string) bool {
 // it only provides regex support for go before/after advice
 // once we refactor to AST replacing the go routines this function will
 // go away
+// this does not write to any files - simply manipulates text
 func (w *Weave) processGoRoutines(curfile string, rootpkg string) string {
 
 	file, err := os.Open(curfile)

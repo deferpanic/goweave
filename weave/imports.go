@@ -1,10 +1,19 @@
-package aop
+// this file needs to be cleaned up hardcore
+// we don't need 10 different ways of doing the same thing
+
+package weave
 
 import (
+	"fmt"
 	"strings"
 
 	"go/ast"
 )
+
+type weaveImport struct {
+	path string
+	nsa  bool
+}
 
 // reads file && de-dupes imports
 func (w *Weave) reWorkImports(fp string) string {
@@ -18,7 +27,8 @@ func (w *Weave) reWorkImports(fp string) string {
 }
 
 // deDupeImports de-dupes imports
-func (w *Weave) deDupeImports(path string, flines []string, pruned []string) string {
+// this is txt processing - not from the ast - FIXME
+func (w *Weave) deDupeImports(path string, flines []string, pruned []*ast.ImportSpec) string {
 	nlines := ""
 
 	inImport := false
@@ -32,7 +42,11 @@ func (w *Weave) deDupeImports(path string, flines []string, pruned []string) str
 			nlines += flines[i]
 
 			for x := 0; x < len(pruned); x++ {
-				nlines += pruned[x] + "\n"
+				if pruned[x].Name != nil {
+					nlines += pruned[x].Name.Name + " " + pruned[x].Path.Value + "\n"
+				} else {
+					nlines += pruned[x].Path.Value + "\n"
+				}
 			}
 
 			continue
@@ -56,6 +70,7 @@ func (w *Weave) deDupeImports(path string, flines []string, pruned []string) str
 	return nlines
 }
 
+// writeMissingImports writes body && any missing imports to fp
 func (w *Weave) writeMissingImports(fp string, out string, importsNeeded []string) string {
 
 	out = w.addMissingImports(importsNeeded, out)
@@ -67,27 +82,46 @@ func (w *Weave) writeMissingImports(fp string, out string, importsNeeded []strin
 }
 
 // pruneImports returns a set of import strings de-duped from the ast
-func (w *Weave) pruneImports(f *ast.File, rootpkg string) []string {
-	pruned := []string{}
+func (w *Weave) pruneImports(f *ast.File, rootpkg string) []*ast.ImportSpec {
+	pruned := []*ast.ImportSpec{}
 
 	for i := 0; i < len(f.Imports); i++ {
 		if f.Imports[i].Path != nil {
 
 			l := f.Imports[i].Path.Value
 
-			// chk to see if this is sub-pkg - we re-write it to
-			// relative path
-			if strings.Contains(l, rootpkg) {
-				l = rewriteImport(l, rootpkg)
+			/*
+				if strings.Contains(l, "pq") {
+					fmt.Println("found pq")
+					fmt.Println(f.Imports[i].Name)
+					fmt.Println(f.Imports[i])
+				}
+			*/
+
+			if strings.Contains(l, rootpkg) && !strings.Contains(l, "_weave") {
+				fmt.Println("my current root is " + rootpkg)
+				f.Imports[i].Path.Value = rewriteImport(l, rootpkg)
+				fmt.Println("rewrote improt to " + f.Imports[i].Path.Value)
 			}
 
-			if !inthere(l, pruned) {
-				pruned = append(pruned, l)
+			if !inthere(f.Imports[i].Path.Value, pruned) {
+				pruned = append(pruned, f.Imports[i])
 			}
 		}
 	}
 
 	return pruned
+}
+
+// inthere returns true if p is part of ray
+func inthere(p string, ray []*ast.ImportSpec) bool {
+	for i := 0; i < len(ray); i++ {
+		if ray[i].Path.Value == p {
+			return true
+		}
+	}
+
+	return false
 }
 
 // addMissingImports adds any imports from advice that was found
@@ -116,5 +150,5 @@ func (w *Weave) addMissingImports(imports []string, out string) string {
 // rewriteImport is intended to rewrite a sub pkg of the base pkg to a
 // relative path since we for now cp it to a diff. workspace
 func rewriteImport(l string, rp string) string {
-	return strings.Replace(l, rp, ".", -1)
+	return "\"_weave/" + l[1:len(l)]
 }

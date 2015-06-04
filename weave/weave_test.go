@@ -1,4 +1,4 @@
-package aop
+package weave
 
 import (
 	"go/ast"
@@ -649,7 +649,7 @@ func main() {
 
 }
 
-func TestSubPkgRewrite(t *testing.T) {
+func TestPkgRewrite(t *testing.T) {
 	f1 := `package main
 
 import (
@@ -668,7 +668,30 @@ func main() {
 
 	pruned := w.pruneImports(af, s)
 
-	if pruned[0] != "\"./subpkg\"" {
+	if pruned[0] != "\"_weave/github.com/some/stuff/subpkg\"" {
+		t.Error(pruned[0])
+		t.Error("pruneImports not working")
+	}
+
+	f1 = `package main
+
+import (
+	"github.com/some/stuff/otherpkg"
+)
+
+func main() {
+}`
+
+	s = "github.com/some/stuff/subpkg"
+
+	w = NewWeave()
+	w.writeOut("/tmp/blah", f1)
+
+	af = w.ParseAST("/tmp/blah")
+
+	pruned = w.pruneImports(af, s)
+
+	if pruned[0] != "\"_weave/github.com/some/stuff/otherpkg\"" {
 		t.Error(pruned[0])
 		t.Error("pruneImports not working")
 	}

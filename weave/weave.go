@@ -1,6 +1,7 @@
-package aop
+package weave
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -24,15 +25,27 @@ type Weave struct {
 	// warn if AST parsing warns you
 	// off by default as many times we don't care
 	warnAST bool
+
+	// the pkg where we run goweave
+	basePkg string
+
+	// build location is where weave our aspects
+	buildLocation string
+
+	// verbose debugging output
+	verbose bool
 }
 
 // NewWeave instantiates and returns a new aop
 func NewWeave() *Weave {
 
 	w := &Weave{
-		flog: log.New(os.Stdout, "", log.Ldate|log.Ltime|log.Lshortfile),
+		flog:          log.New(os.Stdout, "", log.Ldate|log.Ltime|log.Lshortfile),
+		basePkg:       setBase(),
+		buildLocation: tmpLocation(),
 	}
 
+	fmt.Println("using build location of " + w.buildLocation)
 	return w
 
 }
@@ -43,10 +56,12 @@ func (w *Weave) Run() {
 	w.loadAspects()
 
 	// old-school regex parsing
+	// only used for go routines currently
+	// soon to be DEPRECATED
 	w.transform()
 
 	// applys around advice && evals execution joinpoints
-	filepath.Walk(w.tmpLocation(), w.VisitFile)
+	filepath.Walk(w.buildLocation, w.VisitFile)
 
 	w.build()
 
@@ -55,6 +70,7 @@ func (w *Weave) Run() {
 // VisitFile walks each file and transforms it's
 // this is fairly heavy/expensive/pos right now
 func (w *Weave) VisitFile(fp string, fi os.FileInfo, err error) error {
+
 	matched, err := filepath.Match("*.go", fi.Name())
 	if err != nil {
 		w.flog.Println(err)
@@ -62,13 +78,9 @@ func (w *Weave) VisitFile(fp string, fi os.FileInfo, err error) error {
 	}
 
 	if matched {
+		fmt.Println("looking at file " + fp)
 
-		af := w.ParseAST(fp)
-
-		flines := fileLines(fp)
-
-		pruned := w.pruneImports(af, w.rootPkg())
-		lines := w.deDupeImports(fp, flines, pruned)
+		lines := w.reWorkImports(fp)
 
 		// provides 'around' style advice
 		stuff := w.applyAroundAdvice(fp, lines)
