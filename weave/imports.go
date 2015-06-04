@@ -7,18 +7,18 @@ import (
 )
 
 // reads file && de-dupes imports
-func (a *Aop) reWorkImports(fp string) string {
+func (w *Weave) reWorkImports(fp string) string {
 	flines := fileLines(fp)
-	af := a.ParseAST(fp)
-	pruned := a.pruneImports(af, a.rootPkg())
-	lines := a.deDupeImports(fp, flines, pruned)
-	a.writeOut(fp, lines)
+	af := w.ParseAST(fp)
+	pruned := w.pruneImports(af, w.rootPkg())
+	lines := w.deDupeImports(fp, flines, pruned)
+	w.writeOut(fp, lines)
 
 	return lines
 }
 
 // deDupeImports de-dupes imports
-func (a *Aop) deDupeImports(path string, flines []string, pruned []string) string {
+func (w *Weave) deDupeImports(path string, flines []string, pruned []string) string {
 	nlines := ""
 
 	inImport := false
@@ -56,18 +56,18 @@ func (a *Aop) deDupeImports(path string, flines []string, pruned []string) strin
 	return nlines
 }
 
-func (a *Aop) writeMissingImports(fp string, out string, importsNeeded []string) string {
+func (w *Weave) writeMissingImports(fp string, out string, importsNeeded []string) string {
 
-	out = a.addMissingImports(importsNeeded, out)
+	out = w.addMissingImports(importsNeeded, out)
 
-	a.writeOut(fp, out)
+	w.writeOut(fp, out)
 
 	// de-dupe imports
-	return a.reWorkImports(fp)
+	return w.reWorkImports(fp)
 }
 
 // pruneImports returns a set of import strings de-duped from the ast
-func (a *Aop) pruneImports(f *ast.File, rootpkg string) []string {
+func (w *Weave) pruneImports(f *ast.File, rootpkg string) []string {
 	pruned := []string{}
 
 	for i := 0; i < len(f.Imports); i++ {
@@ -91,7 +91,7 @@ func (a *Aop) pruneImports(f *ast.File, rootpkg string) []string {
 }
 
 // addMissingImports adds any imports from advice that was found
-func (a *Aop) addMissingImports(imports []string, out string) string {
+func (w *Weave) addMissingImports(imports []string, out string) string {
 
 	if strings.Contains(out, "import (") {
 		s := "\n"

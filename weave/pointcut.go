@@ -44,7 +44,7 @@ func setDef(t string) (int, string, error) {
 }
 
 // parsePointCut parses out a pointcut from an aspect
-func (a *Aop) parsePointCut(body string) (Pointcut, error) {
+func (w *Weave) parsePointCut(body string) (Pointcut, error) {
 	pc := strings.Split(body, "pointcut:")
 
 	if len(pc) > 1 {
@@ -66,22 +66,13 @@ func (a *Aop) parsePointCut(body string) (Pointcut, error) {
 	}
 }
 
-// https://eclipse.org/aspectj/doc/released/progguide/semantics-pointcuts.html#matching
-
 /*
-  * explicit method name
-    ```go
-      "blah"
-    ```
+
+	::::TODO::::
 
   * partial match method name
     ```go
       "b"
-    ```
-
-  * function declaration
-    ```go
-      (w http.ResponseWriter, r *http.Request)
     ```
 
   * sub-pkg && method name
@@ -99,7 +90,3 @@ func (a *Aop) parsePointCut(body string) (Pointcut, error) {
       pkg/struct.b
     ```
 */
-
-// https://eclipse.org/aspectj/doc/released/progguide/semantics-pointcuts.html
-
-// should prob. be a pointcut type

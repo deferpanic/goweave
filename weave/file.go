@@ -8,20 +8,20 @@ import (
 )
 
 // reWriteFile rewrites curfile with out && adds any missing imports
-func (a *Aop) reWriteFile(curfile string, out string, importsNeeded []string) {
+func (w *Weave) reWriteFile(curfile string, out string, importsNeeded []string) {
 
-	f, err := os.Create(a.tmpLocation() + "/" + curfile)
+	f, err := os.Create(w.tmpLocation() + "/" + curfile)
 	if err != nil {
-		a.flog.Println(err)
+		w.flog.Println(err)
 	}
 
 	defer f.Close()
 
-	out = a.addMissingImports(importsNeeded, out)
+	out = w.addMissingImports(importsNeeded, out)
 
 	_, err = f.WriteString(out)
 	if err != nil {
-		a.flog.Println(err)
+		w.flog.Println(err)
 	}
 }
 
@@ -48,17 +48,17 @@ func fileLines(path string) []string {
 }
 
 // writeOut writes nlines to path
-func (a *Aop) writeOut(path string, nlines string) {
+func (w *Weave) writeOut(path string, nlines string) {
 
 	b := []byte(nlines)
 	err := ioutil.WriteFile(path, b, 0644)
 	if err != nil {
-		a.flog.Println(err)
+		w.flog.Println(err)
 	}
 }
 
 // writeAtLine inserts writes to fname lntxt @ iline
-func (a *Aop) writeAtLine(fname string, iline int, lntxt string) string {
+func (w *Weave) writeAtLine(fname string, iline int, lntxt string) string {
 	flines := fileLines(fname)
 
 	out := ""
@@ -70,7 +70,7 @@ func (a *Aop) writeAtLine(fname string, iline int, lntxt string) string {
 		out += flines[i] + "\n"
 	}
 
-	a.writeOut(fname, out)
+	w.writeOut(fname, out)
 
 	return out
 }

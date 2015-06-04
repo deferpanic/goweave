@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/deferpanic/goweave/aop"
+	"github.com/deferpanic/goweave/weave"
 	"log"
 )
 
@@ -13,7 +13,7 @@ const (
 func main() {
 	log.Println("goweave " + version)
 
-	a := aop.NewAop()
-	a.Run()
+	w := aop.NewWeave()
+	w.Run()
 
 }

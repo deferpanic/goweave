@@ -26,15 +26,15 @@ func singleLineGo(l string) bool {
 	return false
 }
 
-// processGoRoutines is in the process of being deprecated
+// processGoRoutines is in the process of being DEPRECATED
 // it only provides regex support for go before/after advice
 // once we refactor to AST replacing the go routines this function will
 // go away
-func (a *Aop) processGoRoutines(curfile string, rootpkg string) string {
+func (w *Weave) processGoRoutines(curfile string, rootpkg string) string {
 
 	file, err := os.Open(curfile)
 	if err != nil {
-		a.flog.Println(err)
+		w.flog.Println(err)
 	}
 	defer file.Close()
 
@@ -50,7 +50,7 @@ func (a *Aop) processGoRoutines(curfile string, rootpkg string) string {
 	for scanner.Scan() {
 		l := scanner.Text()
 
-		newAspect := pointCutMatch(a.aspects, l)
+		newAspect := pointCutMatch(w.aspects, l)
 		if newAspect.pointkut.def != "" {
 			scope += 1
 
@@ -123,7 +123,7 @@ func (a *Aop) processGoRoutines(curfile string, rootpkg string) string {
 	}
 
 	if err := scanner.Err(); err != nil {
-		a.flog.Println(err)
+		w.flog.Println(err)
 	}
 
 	return out

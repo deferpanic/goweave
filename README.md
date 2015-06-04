@@ -448,6 +448,8 @@ else.
 
 ### TODO - a.k.a. - Known Suckiness
 
+* add documentation/example support for weaves
+
 * make everything use ast
 
 * make everything modify ast not raw text

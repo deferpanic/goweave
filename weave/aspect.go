@@ -18,23 +18,23 @@ type Aspect struct {
 //
 // maybe the rule should be - aspects are valid for anything in a
 // project root?
-func (a *Aop) loadAspects() {
+func (w *Weave) loadAspects() {
 
-	fz := a.findAspects()
+	fz := w.findAspects()
 	for i := 0; i < len(fz); i++ {
 
 		buf, err := ioutil.ReadFile(fz[i])
 		if err != nil {
-			a.flog.Println(err)
+			w.flog.Println(err)
 		}
 		s := string(buf)
 
-		a.parseAspectFile(s)
+		w.parseAspectFile(s)
 	}
 }
 
 // parseImports returns an array of imports for the corresponding advice
-func (a *Aop) parseImports(body string) []string {
+func (w *Weave) parseImports(body string) []string {
 	impbrace := strings.Split(body, "imports (")
 
 	if len(impbrace) > 1 {
@@ -47,7 +47,7 @@ func (a *Aop) parseImports(body string) []string {
 }
 
 // containsBefore returns true if the body has before advice
-func (a *Aop) containsBefore(body string) bool {
+func (w *Weave) containsBefore(body string) bool {
 	if strings.Contains(body, "before: {") {
 		return true
 	} else {
@@ -56,7 +56,7 @@ func (a *Aop) containsBefore(body string) bool {
 }
 
 // containsAfter returns true if the body has after advice
-func (a *Aop) containsAfter(body string) bool {
+func (w *Weave) containsAfter(body string) bool {
 	if strings.Contains(body, "after: {") {
 		return true
 	} else {
@@ -65,12 +65,12 @@ func (a *Aop) containsAfter(body string) bool {
 }
 
 // rightBraceCnt returns the number of right braces in a string
-func (a *Aop) rightBraceCnt(body string) int {
+func (w *Weave) rightBraceCnt(body string) int {
 	return strings.Count(body, "}")
 }
 
 // parseAdvice returns advice about this aspect
-func (a *Aop) parseAdvice(body string) Advice {
+func (w *Weave) parseAdvice(body string) Advice {
 	advize := strings.Split(body, "advice:")[1]
 
 	a4t := ""
@@ -80,12 +80,12 @@ func (a *Aop) parseAdvice(body string) Advice {
 	bbrace := strings.Split(advize, "before: {")
 	if len(bbrace) > 1 {
 		// fixme
-		if a.containsAfter(bbrace[1]) {
+		if w.containsAfter(bbrace[1]) {
 			b4 := strings.Split(bbrace[1], "}")[0]
 			b4t = strings.TrimSpace(b4)
 			// ...
 		} else {
-			cnt := a.rightBraceCnt(bbrace[1])
+			cnt := w.rightBraceCnt(bbrace[1])
 			// have at most 3 right braces
 			// 3 - 3 = 0
 			// 4 - 3 = 1
@@ -126,7 +126,7 @@ func (a *Aop) parseAdvice(body string) Advice {
 // parseAspectFile loads an individual file containing aspects
 // there be tigers here
 // subject to immediate and dramatic change
-func (a *Aop) parseAspectFile(body string) {
+func (w *Weave) parseAspectFile(body string) {
 	results := []Aspect{}
 
 	aspects := strings.Split(body, "aspect {")
@@ -136,22 +136,22 @@ func (a *Aop) parseAspectFile(body string) {
 		aspect := aspects[i]
 		azpect := Aspect{}
 
-		pk, err := a.parsePointCut(aspect)
+		pk, err := w.parsePointCut(aspect)
 		if err != nil {
-			a.flog.Println(err)
+			w.flog.Println(err)
 			continue
 		} else {
 			azpect.pointkut = pk
 		}
 
-		azpect.importz = a.parseImports(aspect)
+		azpect.importz = w.parseImports(aspect)
 
-		azpect.advize = a.parseAdvice(aspect)
+		azpect.advize = w.parseAdvice(aspect)
 
 		results = append(results, azpect)
 
 	}
 
-	a.aspects = results
+	w.aspects = results
 
 }

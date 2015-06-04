@@ -29,9 +29,9 @@ func main() {
 	http.HandleFunc("/panic2", dps.HTTPHandlerFunc(panic2Handler))
 }
 `
-	aop := NewAop()
+	w := NewWeave()
 
-	aop.writeOut("/tmp/blah", f1)
+	w.writeOut("/tmp/blah", f1)
 
 	aspect := Aspect{
 		advize: Advice{
@@ -44,9 +44,9 @@ func main() {
 
 	aspects := []Aspect{}
 	aspects = append(aspects, aspect)
-	aop.aspects = aspects
+	w.aspects = aspects
 
-	after := aop.applyAroundAdvice("/tmp/blah", f1)
+	after := w.applyAroundAdvice("/tmp/blah", f1)
 
 	if after != expected {
 		t.Error(after)
@@ -57,7 +57,7 @@ func main() {
 }
 
 func TestGoTx(t *testing.T) {
-	a := &Aop{}
+	w := &Weave{}
 
 	f1 := `package main
 
@@ -86,7 +86,7 @@ func main() {
 	time.Sleep(1 * time.Second)
 }`
 
-	a.writeOut("/tmp/blah_test_go", f1)
+	w.writeOut("/tmp/blah_test_go", f1)
 
 	aspect2 := Aspect{
 		advize: Advice{
@@ -101,11 +101,11 @@ func main() {
 
 	aspects = append(aspects, aspect2)
 
-	a.aspects = aspects
+	w.aspects = aspects
 
-	rootpkg := a.rootPkg()
+	rootpkg := w.rootPkg()
 
-	after := a.processGoRoutines("/tmp/blah_test_go", rootpkg)
+	after := w.processGoRoutines("/tmp/blah_test_go", rootpkg)
 
 	expected :=
 		`package main
@@ -201,9 +201,9 @@ func main() {
 }
 `
 
-	aop := &Aop{}
+	w := &Weave{}
 
-	aop.writeOut("/tmp/blah", f1)
+	w.writeOut("/tmp/blah", f1)
 
 	aspect := Aspect{
 		advize: Advice{
@@ -218,9 +218,9 @@ func main() {
 
 	aspects := []Aspect{}
 	aspects = append(aspects, aspect)
-	aop.aspects = aspects
+	w.aspects = aspects
 
-	after := aop.applyExecutionJP("/tmp/blah", f1)
+	after := w.applyExecutionJP("/tmp/blah", f1)
 
 	if after != expected {
 		t.Error(after)
@@ -261,9 +261,9 @@ fmt.Println("before main")
 }
 `
 
-	aop := &Aop{}
+	w := &Weave{}
 
-	aop.writeOut("/tmp/blah", f1)
+	w.writeOut("/tmp/blah", f1)
 
 	aspect := Aspect{
 		advize: Advice{
@@ -277,9 +277,9 @@ fmt.Println("before main")
 
 	aspects := []Aspect{}
 	aspects = append(aspects, aspect)
-	aop.aspects = aspects
+	w.aspects = aspects
 
-	after := aop.applyExecutionJP("/tmp/blah", f1)
+	after := w.applyExecutionJP("/tmp/blah", f1)
 
 	if after != expected {
 		t.Error(after)
@@ -319,9 +319,9 @@ func main() {
 }
 `
 
-	aop := &Aop{}
+	w := &Weave{}
 
-	aop.writeOut("/tmp/blah", f1)
+	w.writeOut("/tmp/blah", f1)
 
 	aspect := Aspect{
 		advize: Advice{
@@ -335,9 +335,9 @@ func main() {
 
 	aspects := []Aspect{}
 	aspects = append(aspects, aspect)
-	aop.aspects = aspects
+	w.aspects = aspects
 
-	after := aop.applyExecutionJP("/tmp/blah", f1)
+	after := w.applyExecutionJP("/tmp/blah", f1)
 
 	if after != expected {
 		t.Error(after)
@@ -377,9 +377,9 @@ func main() {
 }
 `
 
-	aop := &Aop{}
+	w := &Weave{}
 
-	aop.writeOut("/tmp/blah", f1)
+	w.writeOut("/tmp/blah", f1)
 
 	aspect := Aspect{
 		advize: Advice{
@@ -393,9 +393,9 @@ func main() {
 
 	aspects := []Aspect{}
 	aspects = append(aspects, aspect)
-	aop.aspects = aspects
+	w.aspects = aspects
 
-	after := aop.applyExecutionJP("/tmp/blah", f1)
+	after := w.applyExecutionJP("/tmp/blah", f1)
 
 	if after != expected {
 		t.Error(after)
@@ -436,9 +436,9 @@ func main() {
 }
 `
 
-	aop := &Aop{}
+	w := &Weave{}
 
-	aop.writeOut("/tmp/blah", f1)
+	w.writeOut("/tmp/blah", f1)
 
 	aspect := Aspect{
 		advize: Advice{
@@ -453,9 +453,9 @@ func main() {
 
 	aspects := []Aspect{}
 	aspects = append(aspects, aspect)
-	aop.aspects = aspects
+	w.aspects = aspects
 
-	after := aop.applyExecutionJP("/tmp/blah", f1)
+	after := w.applyExecutionJP("/tmp/blah", f1)
 
 	if after != expected {
 		t.Error(after)
@@ -497,9 +497,9 @@ func main() {
 }
 `
 
-	aop := &Aop{}
+	w := &Weave{}
 
-	aop.writeOut("/tmp/blah", f1)
+	w.writeOut("/tmp/blah", f1)
 
 	aspect := Aspect{
 		advize: Advice{
@@ -513,9 +513,9 @@ func main() {
 
 	aspects := []Aspect{}
 	aspects = append(aspects, aspect)
-	aop.aspects = aspects
+	w.aspects = aspects
 
-	after := aop.applyExecutionJP("/tmp/blah", f1)
+	after := w.applyExecutionJP("/tmp/blah", f1)
 
 	if after != expected {
 		t.Error(after)
@@ -555,9 +555,9 @@ func main() {
 }
 `
 
-	aop := &Aop{}
+	w := &Weave{}
 
-	aop.writeOut("/tmp/blah", f1)
+	w.writeOut("/tmp/blah", f1)
 
 	aspect := Aspect{
 		advize: Advice{
@@ -571,9 +571,9 @@ func main() {
 
 	aspects := []Aspect{}
 	aspects = append(aspects, aspect)
-	aop.aspects = aspects
+	w.aspects = aspects
 
-	after := aop.applyExecutionJP("/tmp/blah", f1)
+	after := w.applyExecutionJP("/tmp/blah", f1)
 
 	if after != expected {
 		t.Error(after)
@@ -621,9 +621,9 @@ func main() {
 }
 `
 
-	aop := &Aop{}
+	w := &Weave{}
 
-	aop.writeOut("/tmp/blah", f1)
+	w.writeOut("/tmp/blah", f1)
 
 	aspect := Aspect{
 		advize: Advice{
@@ -637,9 +637,9 @@ func main() {
 
 	aspects := []Aspect{}
 	aspects = append(aspects, aspect)
-	aop.aspects = aspects
+	w.aspects = aspects
 
-	after := aop.applyExecutionJP("/tmp/blah", f1)
+	after := w.applyExecutionJP("/tmp/blah", f1)
 
 	if after != expected {
 		t.Error(after)
@@ -661,12 +661,12 @@ func main() {
 
 	s := "github.com/some/stuff"
 
-	a := NewAop()
-	a.writeOut("/tmp/blah", f1)
+	w := NewWeave()
+	w.writeOut("/tmp/blah", f1)
 
-	af := a.ParseAST("/tmp/blah")
+	af := w.ParseAST("/tmp/blah")
 
-	pruned := a.pruneImports(af, s)
+	pruned := w.pruneImports(af, s)
 
 	if pruned[0] != "\"./subpkg\"" {
 		t.Error(pruned[0])

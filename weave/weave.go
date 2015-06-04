@@ -16,8 +16,8 @@ import (
 	"golang.org/x/tools/go/types"
 )
 
-// Aop is struct runner for aop transforms
-type Aop struct {
+// Weave is struct runner for aspect transforms
+type Weave struct {
 	flog    *log.Logger
 	aspects []Aspect
 
@@ -26,57 +26,57 @@ type Aop struct {
 	warnAST bool
 }
 
-// NewAop instantiates and returns a new aop
-func NewAop() *Aop {
+// NewWeave instantiates and returns a new aop
+func NewWeave() *Weave {
 
-	aop := &Aop{
+	w := &Weave{
 		flog: log.New(os.Stdout, "", log.Ldate|log.Ltime|log.Lshortfile),
 	}
 
-	return aop
+	return w
 
 }
 
 // Run preps, grabs advice, transforms the src, and builds the code
-func (a *Aop) Run() {
-	a.prep()
-	a.loadAspects()
+func (w *Weave) Run() {
+	w.prep()
+	w.loadAspects()
 
 	// old-school regex parsing
-	a.transform()
+	w.transform()
 
 	// applys around advice && evals execution joinpoints
-	filepath.Walk(a.tmpLocation(), a.VisitFile)
+	filepath.Walk(w.tmpLocation(), w.VisitFile)
 
-	a.build()
+	w.build()
 
 }
 
 // VisitFile walks each file and transforms it's
 // this is fairly heavy/expensive/pos right now
-func (a *Aop) VisitFile(fp string, fi os.FileInfo, err error) error {
+func (w *Weave) VisitFile(fp string, fi os.FileInfo, err error) error {
 	matched, err := filepath.Match("*.go", fi.Name())
 	if err != nil {
-		a.flog.Println(err)
+		w.flog.Println(err)
 		return err
 	}
 
 	if matched {
 
-		af := a.ParseAST(fp)
+		af := w.ParseAST(fp)
 
 		flines := fileLines(fp)
 
-		pruned := a.pruneImports(af, a.rootPkg())
-		lines := a.deDupeImports(fp, flines, pruned)
+		pruned := w.pruneImports(af, w.rootPkg())
+		lines := w.deDupeImports(fp, flines, pruned)
 
 		// provides 'around' style advice
-		stuff := a.applyAroundAdvice(fp, lines)
-		a.writeOut(fp, stuff)
+		stuff := w.applyAroundAdvice(fp, lines)
+		w.writeOut(fp, stuff)
 
 		// provides advice matching against execution join points
-		stuff = a.applyExecutionJP(fp, stuff)
-		a.writeOut(fp, stuff)
+		stuff = w.applyExecutionJP(fp, stuff)
+		w.writeOut(fp, stuff)
 
 	}
 
@@ -84,13 +84,13 @@ func (a *Aop) VisitFile(fp string, fi os.FileInfo, err error) error {
 }
 
 // Parse parses the ast for this file and returns a ParsedFile
-func (a *Aop) ParseAST(fname string) *ast.File {
+func (w *Weave) ParseAST(fname string) *ast.File {
 	var err error
 
 	fset := token.NewFileSet()
 	af, err := parser.ParseFile(fset, fname, nil, 0)
 	if err != nil {
-		a.flog.Println(err)
+		w.flog.Println(err)
 	}
 
 	loadcfg := loader.Config{}
@@ -104,8 +104,8 @@ func (a *Aop) ParseAST(fname string) *ast.File {
 	var conf types.Config
 	_, err = conf.Check(af.Name.Name, fset, []*ast.File{af}, &info)
 	if err != nil {
-		if a.warnAST {
-			a.flog.Println(err)
+		if w.warnAST {
+			w.flog.Println(err)
 		}
 	}
 
@@ -131,20 +131,20 @@ func pointCutMatch(a []Aspect, l string) Aspect {
 // where appropriate
 //
 // only inserts before/advice after
-func (a *Aop) transform() {
+func (w *Weave) transform() {
 
-	fzs := a.findGoFiles()
+	fzs := w.findGoFiles()
 
-	rootpkg := a.rootPkg()
+	rootpkg := w.rootPkg()
 
 	for i := 0; i < len(fzs); i++ {
-		out := a.processGoRoutines(fzs[i], rootpkg)
-		a.reWriteFile(fzs[i], out, []string{})
+		out := w.processGoRoutines(fzs[i], rootpkg)
+		w.reWriteFile(fzs[i], out, []string{})
 	}
 }
 
 // findGoFiles recursively finds all go files in a project
-func (a *Aop) findGoFiles() []string {
+func (w *Weave) findGoFiles() []string {
 	res := []string{}
 
 	visit := func(path string, f os.FileInfo, err error) error {
@@ -156,14 +156,14 @@ func (a *Aop) findGoFiles() []string {
 
 	err := filepath.Walk(".", visit)
 	if err != nil {
-		a.flog.Println(err.Error())
+		w.flog.Println(err.Error())
 	}
 
 	return res
 }
 
 // findAspects finds all aspects for this project
-func (a *Aop) findAspects() []string {
+func (w *Weave) findAspects() []string {
 	aspects := []string{}
 
 	files, _ := ioutil.ReadDir("./")

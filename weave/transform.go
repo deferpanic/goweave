@@ -18,13 +18,13 @@ import (
 // looks for call joinpoints && provides around advice capability
 //
 // this is currently a hack to support deferpanic's http lib
-func (a *Aop) applyAroundAdvice(fname string, lines string) string {
+func (w *Weave) applyAroundAdvice(fname string, lines string) string {
 
 	stuff := lines
 	importsNeeded := []string{}
 
-	for i := 0; i < len(a.aspects); i++ {
-		aspect := a.aspects[i]
+	for i := 0; i < len(w.aspects); i++ {
+		aspect := w.aspects[i]
 		if aspect.advize.around != "" {
 			pk := aspect.pointkut
 			around_advice := aspect.advize.around
@@ -32,7 +32,7 @@ func (a *Aop) applyAroundAdvice(fname string, lines string) string {
 			fset := token.NewFileSet()
 			file, err := parser.ParseFile(fset, fname, lines, parser.Mode(0))
 			if err != nil {
-				a.flog.Println("Failed to parse source: %s", err.Error())
+				w.flog.Println("Failed to parse source: %s", err.Error())
 			}
 
 			// needs match groups
@@ -45,12 +45,12 @@ func (a *Aop) applyAroundAdvice(fname string, lines string) string {
 			buf := new(bytes.Buffer)
 			err = format.Node(buf, fset, file)
 			if err != nil {
-				a.flog.Println("Failed to format post-replace source: %v", err)
+				w.flog.Println("Failed to format post-replace source: %v", err)
 			}
 
 			actual := buf.String()
 
-			a.writeOut(fname, actual)
+			w.writeOut(fname, actual)
 
 			stuff = actual
 
@@ -62,20 +62,20 @@ func (a *Aop) applyAroundAdvice(fname string, lines string) string {
 	}
 
 	// add any imports for this piece of advice
-	stuff = a.writeMissingImports(fname, stuff, importsNeeded)
+	stuff = w.writeMissingImports(fname, stuff, importsNeeded)
 
 	return stuff
 }
 
 // applyExecutionJP applies any advice for execution joinpoints
-func (a *Aop) applyExecutionJP(fname string, stuff string) string {
+func (w *Weave) applyExecutionJP(fname string, stuff string) string {
 
 	rout := stuff
 
 	importsNeeded := []string{}
 
-	for i := 0; i < len(a.aspects); i++ {
-		aspect := a.aspects[i]
+	for i := 0; i < len(w.aspects); i++ {
+		aspect := w.aspects[i]
 		if !(aspect.pointkut.kind > 0) {
 			continue
 		}
@@ -88,7 +88,7 @@ func (a *Aop) applyExecutionJP(fname string, stuff string) string {
 		fset := token.NewFileSet()
 		file, err := parser.ParseFile(fset, fname, rout, parser.Mode(0))
 		if err != nil {
-			a.flog.Println("Failed to parse source: %s", err.Error())
+			w.flog.Println("Failed to parse source: %s", err.Error())
 		}
 
 		linecnt := 0
@@ -118,12 +118,12 @@ func (a *Aop) applyExecutionJP(fname string, stuff string) string {
 				// advice need to be accounted for w/begin
 
 				if before_advice != "" {
-					rout = a.writeAtLine(fname, begin+linecnt, before_advice)
+					rout = w.writeAtLine(fname, begin+linecnt, before_advice)
 					linecnt += strings.Count(before_advice, "\n") + 1
 				}
 
 				if after_advice != "" {
-					rout = a.writeAtLine(fname, after+linecnt-1, after_advice)
+					rout = w.writeAtLine(fname, after+linecnt-1, after_advice)
 					linecnt += strings.Count(after_advice, "\n") + 1
 				}
 
@@ -136,7 +136,7 @@ func (a *Aop) applyExecutionJP(fname string, stuff string) string {
 	}
 
 	// add any imports for this piece of advice applyExecutionJP
-	rout = a.writeMissingImports(fname, rout, importsNeeded)
+	rout = w.writeMissingImports(fname, rout, importsNeeded)
 
 	return rout
 }

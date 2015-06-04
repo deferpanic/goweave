@@ -17,14 +17,14 @@ aspect {
 }
 `
 
-	aop := &Aop{}
-	aop.parseAspectFile(f)
+	w := &Weave{}
+	w.parseAspectFile(f)
 
-	if len(aop.aspects) != 1 {
+	if len(w.aspects) != 1 {
 		t.Error("didn't parse aspects")
 	}
 
-	first := aop.aspects[0]
+	first := w.aspects[0]
 
 	if first.pointkut.kind != 2 {
 		t.Error("didn't set pointcut definition correctly")
@@ -69,14 +69,14 @@ aspect {
 }
 `
 
-	aop := &Aop{}
-	aop.parseAspectFile(f)
+	w := &Weave{}
+	w.parseAspectFile(f)
 
-	if len(aop.aspects) != 1 {
+	if len(w.aspects) != 1 {
 		t.Error("didn't parse aspects")
 	}
 
-	first := aop.aspects[0]
+	first := w.aspects[0]
 
 	if first.pointkut.def != "main" {
 		t.Error("didn't set pointcut definition correctly")
@@ -120,14 +120,14 @@ aspect {
 }
 `
 
-	aop := &Aop{}
-	aop.parseAspectFile(f)
+	w := &Weave{}
+	w.parseAspectFile(f)
 
-	if len(aop.aspects) != 1 {
+	if len(w.aspects) != 1 {
 		t.Error("didn't parse aspects")
 	}
 
-	first := aop.aspects[0]
+	first := w.aspects[0]
 
 	if first.pointkut.def != "main" {
 		t.Error("didn't set pointcut definition correctly")
@@ -167,14 +167,14 @@ aspect {
 }
 `
 
-	aop := &Aop{}
-	aop.parseAspectFile(f)
+	w := &Weave{}
+	w.parseAspectFile(f)
 
-	if len(aop.aspects) != 1 {
+	if len(w.aspects) != 1 {
 		t.Error("didn't parse aspects")
 	}
 
-	first := aop.aspects[0]
+	first := w.aspects[0]
 
 	if first.pointkut.def != "main" {
 		t.Error("didn't set pointcut definition correctly")
@@ -213,14 +213,14 @@ aspect {
 }
 `
 
-	aop := &Aop{}
-	aop.parseAspectFile(f)
+	w := &Weave{}
+	w.parseAspectFile(f)
 
-	if len(aop.aspects) != 1 {
+	if len(w.aspects) != 1 {
 		t.Error("didn't parse aspects")
 	}
 
-	first := aop.aspects[0]
+	first := w.aspects[0]
 
 	s := `for i:=0; i<10; i++ {
           fmt.Println(i)
