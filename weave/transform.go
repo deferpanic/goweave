@@ -2,6 +2,7 @@ package weave
 
 import (
 	"bytes"
+	"fmt"
 	"go/ast"
 	"go/format"
 	"go/parser"
@@ -127,7 +128,9 @@ func (w *Weave) applyExecutionJP(fname string, stuff string) string {
 
 				if after_advice != "" {
 					if fn.Type.Results != nil {
-						rout = w.writeAtLine(fname, after+linecnt-2, after_advice)
+						fmt.Println("writing to " + fname)
+						fmt.Println(after + linecnt - 2)
+						rout = w.writeAtLine(fname, after+linecnt-3, after_advice)
 					} else {
 						rout = w.writeAtLine(fname, after+linecnt-1, after_advice)
 					}

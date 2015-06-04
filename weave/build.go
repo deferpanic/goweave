@@ -79,9 +79,12 @@ func (w *Weave) build() {
 // prep prepares any tmp. build dirs
 func (w *Weave) prep() {
 
+	// hacky dir prep
 	fstcmd := "mkdir -p " + w.buildLocation
-
 	sndcmd := `find . -type d -exec mkdir -p "` + w.buildLocation + `/{}" \;`
+
+	// hack to get anything that might be ref'd in the env
+	hackcmd := `cp -R * ` + w.buildLocation
 
 	_, err := exec.Command("bash", "-c", fstcmd).CombinedOutput()
 	if err != nil {
@@ -89,6 +92,11 @@ func (w *Weave) prep() {
 	}
 
 	_, err = exec.Command("bash", "-c", sndcmd).CombinedOutput()
+	if err != nil {
+		w.flog.Println(err.Error())
+	}
+
+	_, err = exec.Command("bash", "-c", hackcmd).CombinedOutput()
 	if err != nil {
 		w.flog.Println(err.Error())
 	}
