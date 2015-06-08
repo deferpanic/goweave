@@ -1,4 +1,4 @@
-box: wercker/golang
+box: google/golang
 # Build definition
 build:
   # The steps that will be executed on build
@@ -12,7 +12,6 @@ build:
         name: go get
         code: |
           cd $WERCKER_SOURCE_DIR
-          go version
           go get -t ./...
 
     # Test the project
