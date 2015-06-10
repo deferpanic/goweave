@@ -562,7 +562,8 @@ else.
 
 * This *might* eat your cat - watch out.
 
-### TODO - a.k.a. - Known Suckiness
+### TODO
+#### a.k.a. - Known Suckiness
 
 * add ability to add global function advice to pkg
 
