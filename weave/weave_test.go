@@ -2,7 +2,8 @@ package weave
 
 import (
 	"go/ast"
-
+	"strconv"
+	"strings"
 	"testing"
 )
 
@@ -973,6 +974,252 @@ fmt.Println(myCnt)
 		t.Error("applyGlobalAdvice is not transforming correctly")
 	}
 
+}
+
+func TestApplyCallAsArg(t *testing.T) {
+
+	f1 := `package main
+
+import (
+	"fmt"
+	"strconv"
+)
+
+func main() {
+	fmt.Println("some stuff" + strconv.Itoa(2)) +
+	"and some other stuff" + strconv.Itoa(42))
+}`
+
+	expected := `package main
+
+import (
+	"fmt"
+	"strconv"
+)
+
+func main() {
+fmt.Println("strconv called")
+fmt.Println("strconv called")
+	fmt.Println("some stuff" + strconv.Itoa(2)) +
+	"and some other stuff" + strconv.Itoa(42))
+}
+`
+
+	w := NewWeave()
+
+	w.writeOut("/tmp/blah", f1)
+
+	aspect := Aspect{
+		advize: Advice{
+			before: "fmt.Println(\"strconv called\")",
+		},
+		pointkut: Pointcut{
+			def:  "strconv.Itoa(int i)",
+			kind: 1,
+		},
+	}
+
+	aspects := []Aspect{}
+	aspects = append(aspects, aspect)
+	w.aspects = aspects
+
+	after := w.applyCallAdvice("/tmp/blah", f1)
+
+	if after != expected {
+		t.Error(after)
+		t.Error(expected)
+		t.Error("applyCallAdvice is not transforming correctly")
+	}
+
+}
+
+func TestApplyCallAsArgComma(t *testing.T) {
+
+	f1 := `package main
+
+import (
+	"fmt"
+	"strconv"
+)
+
+func main() {
+	fmt.Printf("some stuff %d",
+strconv.Itoa(2))
+}`
+
+	expected := `package main
+
+import (
+	"fmt"
+	"strconv"
+)
+
+func main() {
+fmt.Println("strconv called")
+	fmt.Printf("some stuff %d",
+strconv.Itoa(2))
+}
+`
+
+	w := NewWeave()
+
+	w.writeOut("/tmp/blah", f1)
+
+	aspect := Aspect{
+		advize: Advice{
+			before: "fmt.Println(\"strconv called\")",
+		},
+		pointkut: Pointcut{
+			def:  "strconv.Itoa(int i)",
+			kind: 1,
+		},
+	}
+
+	aspects := []Aspect{}
+	aspects = append(aspects, aspect)
+	w.aspects = aspects
+
+	after := w.applyCallAdvice("/tmp/blah", f1)
+
+	if after != expected {
+		t.Error(after)
+		t.Error(expected)
+		t.Error("applyCallAdvice is not transforming correctly")
+	}
+
+}
+
+func TestApplyCallAsArgComma2(t *testing.T) {
+
+	f1 := `package main
+
+import (
+	"fmt"
+	"strconv"
+)
+
+func main() {
+	err := db.QueryRow("select blah from users where id = $1 limit 1",
+		strconv.Itoa(uid)).Scan(&blah)
+}`
+
+	expected := `package main
+
+import (
+	"fmt"
+	"strconv"
+)
+
+func main() {
+fmt.Println("strconv called")
+	err := db.QueryRow("select blah from users where id = $1 limit 1",
+		strconv.Itoa(uid)).Scan(&blah)
+}
+`
+
+	w := NewWeave()
+
+	w.writeOut("/tmp/blah", f1)
+
+	aspect := Aspect{
+		advize: Advice{
+			before: "fmt.Println(\"strconv called\")",
+		},
+		pointkut: Pointcut{
+			def:  "strconv.Itoa(int i)",
+			kind: 1,
+		},
+	}
+
+	aspects := []Aspect{}
+	aspects = append(aspects, aspect)
+	w.aspects = aspects
+
+	after := w.applyCallAdvice("/tmp/blah", f1)
+
+	if after != expected {
+		t.Error(after)
+		t.Error(expected)
+		t.Error("applyCallAdvice is not transforming correctly")
+	}
+
+}
+
+func TestCallInCompositeLit(t *testing.T) {
+
+	f1 := `package main
+
+import (
+	"fmt"
+	"strconv"
+)
+
+func main() {
+	value := map[string]string{
+		"name":       userName,
+		"id":         strconv.Itoa(1),
+		"id2":        strconv.Itoa(int(2)),
+		"id3":        strconv.Itoa(int(3)),
+	}
+}`
+
+	expected := `package main
+
+import (
+	"fmt"
+	"strconv"
+)
+
+func main() {
+fmt.Println("strconv called")
+fmt.Println("strconv called")
+fmt.Println("strconv called")
+	value := map[string]string{
+		"name":       userName,
+		"id":         strconv.Itoa(1),
+		"id2":        strconv.Itoa(int(2)),
+		"id3":        strconv.Itoa(int(3)),
+	}
+}
+`
+
+	w := NewWeave()
+
+	w.writeOut("/tmp/blah", f1)
+
+	aspect := Aspect{
+		advize: Advice{
+			before: "fmt.Println(\"strconv called\")",
+		},
+		pointkut: Pointcut{
+			def:  "strconv.Itoa(int i)",
+			kind: 1,
+		},
+	}
+
+	aspects := []Aspect{}
+	aspects = append(aspects, aspect)
+	w.aspects = aspects
+
+	after := w.applyCallAdvice("/tmp/blah", f1)
+
+	if after != expected {
+		t.Error(printWLines(after))
+		t.Error(printWLines(expected))
+		t.Error("applyCallAdvice is not transforming correctly")
+	}
+
+}
+
+func printWLines(stuff string) string {
+	rstr := ""
+
+	b := strings.Split(stuff, "\n")
+	for i := 0; i < len(b); i++ {
+		rstr += strconv.Itoa(i+1) + ":\t" + b[i] + "\n"
+	}
+
+	return rstr
 }
 
 /*
