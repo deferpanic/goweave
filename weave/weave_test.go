@@ -1211,6 +1211,148 @@ fmt.Println("strconv called")
 
 }
 
+func TestCallBlah(t *testing.T) {
+
+	f1 := `package main
+
+import (
+	"fmt"
+	"strconv"
+)
+
+func main() {
+	err := db.QueryRow("select blah1, blah2 from blahs where id = $1 limit 1",
+		agent_id).Scan(&tRes.Id, &tRes.Blah)
+}`
+
+	expected := `package main
+
+import (
+	"fmt"
+	"strconv"
+)
+
+func main() {
+startTime := time.Now()
+	err := db.QueryRow("select blah1, blah2 from blahs where id = $1 limit 1",
+		agent_id).Scan(&tRes.Id, &tRes.Blah)
+endTime := time.Now()
+t := int(((endTime.Sub(startTime)).Nanoseconds() / 1000000))
+fmt.Println("query took %d seconds", t)
+}
+`
+
+	w := NewWeave()
+
+	w.writeOut("/tmp/blah", f1)
+
+	aspect := Aspect{
+		advize: Advice{
+			before: "startTime := time.Now()",
+		},
+		pointkut: Pointcut{
+			def:  "QueryRow(s string)",
+			kind: 1,
+		},
+	}
+
+	aspect2 := Aspect{
+		advize: Advice{
+			after: "endTime := time.Now()\nt := int(((endTime.Sub(startTime)).Nanoseconds() / 1000000))\nfmt.Println(\"query took %d seconds\", t)",
+		},
+		pointkut: Pointcut{
+			def:  "QueryRow(s string)",
+			kind: 1,
+		},
+	}
+
+	aspects := []Aspect{}
+	aspects = append(aspects, aspect)
+	aspects = append(aspects, aspect2)
+	w.aspects = aspects
+
+	after := w.applyCallAdvice("/tmp/blah", f1)
+
+	if after != expected {
+		t.Error(printWLines(after))
+		t.Error(printWLines(expected))
+		t.Error("applyCallAdvice is not transforming correctly")
+	}
+
+}
+
+func TestCallBlah2(t *testing.T) {
+
+	f1 := `package main
+
+import (
+	"fmt"
+	"strconv"
+)
+
+func main() {
+	err := db.QueryRow("select blah1, blah2 from blahs where id = $1 limit 1",
+		agent_id).Scan(&tRes.Id,
+		&tRes.Blah)
+}`
+
+	expected := `package main
+
+import (
+	"fmt"
+	"strconv"
+)
+
+func main() {
+startTime := time.Now()
+	err := db.QueryRow("select blah1, blah2 from blahs where id = $1 limit 1",
+		agent_id).Scan(&tRes.Id,
+		&tRes.Blah)
+endTime := time.Now()
+t := int(((endTime.Sub(startTime)).Nanoseconds() / 1000000))
+fmt.Println("query took %d seconds", t)
+}
+`
+
+	w := NewWeave()
+
+	w.writeOut("/tmp/blah", f1)
+
+	aspect := Aspect{
+		advize: Advice{
+			before: "startTime := time.Now()",
+		},
+		pointkut: Pointcut{
+			def:  "QueryRow(s string)",
+			kind: 1,
+		},
+	}
+
+	aspect2 := Aspect{
+		advize: Advice{
+			after: "endTime := time.Now()\nt := int(((endTime.Sub(startTime)).Nanoseconds() / 1000000))\nfmt.Println(\"query took %d seconds\", t)",
+		},
+		pointkut: Pointcut{
+			def:  "QueryRow(s string)",
+			kind: 1,
+		},
+	}
+
+	aspects := []Aspect{}
+	aspects = append(aspects, aspect)
+	aspects = append(aspects, aspect2)
+	w.aspects = aspects
+
+	after := w.applyCallAdvice("/tmp/blah", f1)
+
+	if after != expected {
+		t.Error(printWLines(after))
+		t.Error(printWLines(expected))
+		t.Error("applyCallAdvice is not transforming correctly")
+	}
+
+}
+
 func printWLines(stuff string) string {
 	rstr := ""
 

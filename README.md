@@ -547,6 +547,9 @@ seconds to build versus 1.59 seconds with just go build.
 based. Lots of work here to do. Once most of the file reading/writing
 stuff is replaced with AST replacement transformations the tests should be much more specific not to mention must faster.
 
+  I really don't like the fact that the tests are the way they are right
+now but just need to ensure certain things work until we refactor it.
+
 ### What You Should Know Before Using
 
 This is *alpha* software - at best. It's more of an idea right now than anything

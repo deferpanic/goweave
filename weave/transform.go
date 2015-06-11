@@ -6,6 +6,7 @@ import (
 	"go/format"
 	"go/parser"
 	"go/token"
+	// "log"
 	"strings"
 )
 
@@ -175,27 +176,41 @@ func (w *Weave) applyCallAdvice(fname string, stuff string) string {
 					// log.Printf("found expression on line %d\n", begin)
 					//log.Printf("lbs: %d, lbe: %d\n", lbs, lbe)
 
+					// adjust begin
 					if begin > lastbinend {
 						// log.Printf("using this funcs start %d", begin)
 					} else {
-						begin = lastbinstart
-						// log.Printf("using binexps' start %d", lastbinstart)
+						if lastbinstart < begin {
+							begin = lastbinstart
+						}
+						// log.Printf("using binexps' start %d", begin)
 					}
 
 					if end > lastbinend {
 						// log.Printf("using this funcs begin %d", begin)
 					} else {
-						begin = lastbinstart
-						// log.Printf("using binexps' start %d", lastbinstart)
+						if lastbinstart < begin {
+							begin = lastbinstart
+						}
+						// log.Printf("using binexps' start %d", begin)
+					}
+
+					// adjust end
+					if lastbinend > end {
+						end = lastbinend
 					}
 
 					if before_advice != "" {
 						rout = w.writeAtLine(fname, begin+linecnt-1, before_advice)
+						// log.Println(rout)
+						// log.Printf("writing at line %d", begin+linecnt-1)
 						linecnt += strings.Count(before_advice, "\n") + 1
 					}
 
 					if after_advice != "" {
 						rout = w.writeAtLine(fname, end+linecnt, after_advice)
+						// log.Println(rout)
+						// log.Printf("writing at line %d", end+linecnt)
 
 						linecnt += strings.Count(after_advice, "\n") + 1
 					}
