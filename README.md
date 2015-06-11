@@ -545,7 +545,7 @@ seconds to build versus 1.59 seconds with just go build.
 
   The tests are very brittle right now and are more functional than unit
 based. Lots of work here to do. Once most of the file reading/writing
-stuff is removed this should be much better.
+stuff is replaced with AST replacement transformations the tests should be much more specific not to mention must faster.
 
 ### What You Should Know Before Using
 

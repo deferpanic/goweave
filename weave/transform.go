@@ -91,8 +91,43 @@ func (w *Weave) applyCallAdvice(fname string, stuff string) string {
 
 		// look for call expressions - call joinpoints
 
+		// bend keeps track of tailing binaryExprs
+		// if a call-expression's end is not > then we use this
+		lastbinstart := 0
+		lastbinend := 0
+
 		ast.Inspect(file, func(n ast.Node) bool {
+
 			switch stmt := n.(type) {
+
+			case *ast.CompositeLit:
+				// log.Printf("found a composite lit\n")
+				lbs := fset.Position(stmt.Lbrace).Line
+				lbe := fset.Position(stmt.Rbrace).Line
+
+				if lbs > lastbinstart {
+					lastbinstart = lbs
+				}
+
+				if lbe > lastbinend {
+					lastbinend = lbe
+				}
+
+			case *ast.BinaryExpr:
+				// child nodes traversed in DFS - so we want the max
+				// it's ok when newer nodes re-write this out of scope
+				lbs := fset.Position(stmt.X.Pos()).Line
+				lbe := fset.Position(stmt.Y.Pos()).Line
+
+				if lbs > lastbinstart {
+					lastbinstart = lbs
+				}
+
+				if lbe > lastbinend {
+					lastbinend = lbe
+				}
+
+				// log.Printf("last bin start %d, last bin end %d", lastbinstart, lastbinend)
 
 			case *ast.CallExpr:
 				var name string
@@ -113,9 +148,46 @@ func (w *Weave) applyCallAdvice(fname string, stuff string) string {
 					pk = strings.Split(pk, ".")[1]
 				}
 
+				// are we part of a bigger expression?
+				// if so grab our lines so we don't erroneously set them
+				if (string(name) != pk) && (len(stmt.Args) > 1) {
+					// log.Printf("found comma..")
+					// child nodes traversed in DFS - so we want the max
+					// it's ok when newer nodes re-write this out of scope
+					lbs := fset.Position(stmt.Lparen).Line
+					lbe := fset.Position(stmt.Rparen).Line
+					// log.Printf("lbs: %d, lbe: %d\n", lbs, lbe)
+					if lbs > 0 {
+						//lastbinstart {
+						lastbinstart = lbs
+					}
+
+					if lbe > lastbinend {
+						lastbinend = lbe
+					}
+
+				}
+
 				if string(name) == pk {
 
 					begin := fset.Position(stmt.Lparen).Line
+					end := fset.Position(stmt.Rparen).Line
+					// log.Printf("found expression on line %d\n", begin)
+					//log.Printf("lbs: %d, lbe: %d\n", lbs, lbe)
+
+					if begin > lastbinend {
+						// log.Printf("using this funcs start %d", begin)
+					} else {
+						begin = lastbinstart
+						// log.Printf("using binexps' start %d", lastbinstart)
+					}
+
+					if end > lastbinend {
+						// log.Printf("using this funcs begin %d", begin)
+					} else {
+						begin = lastbinstart
+						// log.Printf("using binexps' start %d", lastbinstart)
+					}
 
 					if before_advice != "" {
 						rout = w.writeAtLine(fname, begin+linecnt-1, before_advice)
@@ -123,7 +195,7 @@ func (w *Weave) applyCallAdvice(fname string, stuff string) string {
 					}
 
 					if after_advice != "" {
-						rout = w.writeAtLine(fname, begin+linecnt, after_advice)
+						rout = w.writeAtLine(fname, end+linecnt, after_advice)
 
 						linecnt += strings.Count(after_advice, "\n") + 1
 					}
