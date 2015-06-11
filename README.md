@@ -14,6 +14,12 @@
   This really isn't meant to be used by anyone yet - definitely not in a
 production environment - you have been warned!
 
+  Many 'design decisions' were not decisions at all - they were simply
+the "most simplest thing that could work". Lots of work to do - if you
+are going to spew:
+
+![spew into this](http://i.imgur.com/LLvYjvP.jpg)
+
 ### TOC
 
   [What is AOP](https://github.com/deferpanic/goweave#what_is_aop)
