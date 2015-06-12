@@ -16,7 +16,7 @@ import (
 // FIXME
 func (w *Weave) applyGlobalAdvice(fname string, stuff string) string {
 	if w.appliedGlobal {
-		return ""
+		return stuff
 	}
 
 	rout := stuff
