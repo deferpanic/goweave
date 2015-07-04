@@ -1363,21 +1363,3 @@ func printWLines(stuff string) string {
 
 	return rstr
 }
-
-/*
-func TestParsey(t *testing.T) {
-	src := `for i:=0; i< 10; i++ {
-			fmt.Println(i)
-			}`
-
-	fname := "/tmp/blah"
-
-	fset := token.NewFileSet()
-	file, err := parser.ParseFile(fset, fname, src, parser.Mode(0))
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	fmt.Println(file)
-}
-*/
