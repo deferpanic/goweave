@@ -19,13 +19,14 @@ func pointCutType() map[int]string {
 	return map[int]string{
 		1: "call",
 		2: "execution",
+		3: "within",
 	}
 }
 
 // set def extracts the joinpoint from a pointcut definition
 func setDef(t string) (int, string, error) {
 
-	m := `(execute|call)\((.*)\)`
+	m := `(execute|call|within)\((.*)\)`
 	re, err := regexp.Compile(m)
 	if err != nil {
 		return 0, "", errors.New("bad regex")
@@ -35,8 +36,12 @@ func setDef(t string) (int, string, error) {
 	if len(res[0]) == 3 {
 		if res[0][1] == "call" {
 			return 1, res[0][2], nil
-		} else {
+		} else if res[0][1] == "execute" {
 			return 2, res[0][2], nil
+		} else if res[0][1] == "within" {
+			return 3, res[0][2], nil
+		} else {
+			return 0, "", errors.New("bad pointcut")
 		}
 	} else {
 		return 0, "", errors.New("bad pointcut")

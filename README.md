@@ -1,4 +1,4 @@
-# goweave
+e goweave
   Aspect Oriented Programming for Go
 
 [![wercker status](https://app.wercker.com/status/7d7912cec649bc9763736051f64da3fa/s "wercker status")](https://app.wercker.com/project/bykey/7d7912cec649bc9763736051f64da3fa)
@@ -35,6 +35,8 @@ are going to spew:
   [FAQ](https://github.com/deferpanic/goweave#faq)
 
   [Info](https://github.com/deferpanic/goweave#info)
+
+  [Reserved Keywords](https://github.com/deferpanic/goweave#reserved_keywords)
 
   [Differences](https://github.com/deferpanic/goweave#differences)
 
@@ -216,15 +218,19 @@ rather the computer do this for us.
     -- we currently don't support this as we want to be un-obtrusive as possible
     -- that is - we don't want to modify go source
 
-  We support both method && call pointcut primitive right now:
+  We support {call, execute, within} pointcut primitives right now:
 
-    __call__
+__call__
     These happen before, after or wrap around calling a method. The code
 is outside of the function.
 
-    __execute__
+__execute__
     These happen before or after executing a method. The code is put
 inside the method.
+
+__within__
+    These happen for *every* statement within a function body
+declaration.
 
 
   All pointcuts are currently defined only on functions. Struct field
@@ -341,6 +347,24 @@ sub-pkg && struct && method-name
       }
     ```
 
+    within examples:
+    ```go
+      func blah() {
+        slowCall()
+        fastCall()
+      }
+    ```
+
+    __within before:__
+    ```go
+      func blah() {
+        beforeEach()
+        slowCall()
+        beforeEach()
+        fastcall()
+      }
+    ```
+
 ### Goals
 
 * fast - obviously there will always be greater overhead than just
@@ -422,6 +446,16 @@ style of programming allows us to do that.
 this goes hand in hand w/the text processing - most of this should just
 be moved to the AST processing - plenty of cruft laying around as well
 that needs to be refactored
+
+### Reserved Keywords
+
+  Right now the only time you'll run into reserved keywords are in the
+experimental 'within' advice section although there is an intention to
+support a set of keywords that one can use in their aspects.
+
+  * mName
+    If you use 'mName' within your within advice it will translate to a
+string representation of the joinpoint found by your within pointcut.
 
 ### Differences
 

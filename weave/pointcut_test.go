@@ -13,6 +13,7 @@ func TestSetDef(t *testing.T) {
 	}{
 		{"call(beforeBob)", 1, "beforeBob"},
 		{"execute(beforeBob)", 2, "beforeBob"},
+		{"within(beforeBob)", 3, "beforeBob"},
 		{"execute(FuncWithArgs(iarg int, sarg string))", 2, "FuncWithArgs(iarg int, sarg string)"},
 		{"execute(FuncWithArgsAndReturn(iarg int, sarg string) (int, error))", 2, "FuncWithArgsAndReturn(iarg int, sarg string) (int, error)"},
 	}
