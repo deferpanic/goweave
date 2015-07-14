@@ -1,4 +1,4 @@
-e goweave
+goweave
   Aspect Oriented Programming for Go
 
 [![wercker status](https://app.wercker.com/status/7d7912cec649bc9763736051f64da3fa/s "wercker status")](https://app.wercker.com/project/bykey/7d7912cec649bc9763736051f64da3fa)
@@ -86,28 +86,28 @@ That is the rationale behind this.
 
 ### Existing Tools:
 
-#### go fmt:
+#### [go fmt](https://golang.org/pkg/fmt/)
 This is actually used for around advice currently. It allows you to wrap
 methods. Having said that - we wish to do more proper around advice than
 simply re-writing the function declaration.
 
-  [gofmt](http://research.swtch.com/gofmt)
+  ex:
 
   ```go
   gofmt -r 'bytes.Compare(a, b) == 0 -> bytes.Equal(a, b)'
   ```
 
-#### go fix:
+#### [go fix](https://golang.org/cmd/fix/):
 This is one hell of an awesome tool. I just think it's a little
 too low-level for what we are wanting to do. Remember - one of the
 solutions of this tool is to make things as trivial as possible to
 insert new functionality.
 
-#### go cover:
+#### [go cover](https://godoc.org/golang.org/x/tools/cmd/cover):
 This is used to provide code coverage and has similar properties
 to what we want.
 
-#### go generate:
+#### [go generate](http://blog.golang.org/generate):
 We are generating code but we are looking for more extensive code
 generation.
 
@@ -220,15 +220,18 @@ rather the computer do this for us.
 
   We support {call, execute, within} pointcut primitives right now:
 
-__call__
+__call__:
+
     These happen before, after or wrap around calling a method. The code
 is outside of the function.
 
-__execute__
+__execute__:
+
     These happen before or after executing a method. The code is put
 inside the method.
 
-__within__
+__within__:
+
     These happen for *every* statement within a function body
 declaration.
 
@@ -241,52 +244,48 @@ generate might do this acceptably already.
 change "heavily".
 
 #### explicit method name
-    ```go
-      call(blah())
-    ```
+```go
+  call(blah())
+```
 
-    ```go
-      execute(blah())
-    ```
+```go
+  execute(blah())
+```
 
-#### partial match method name
-    TODO
+#### partial match method name - TODO
 
-    ```go
-      call(b.*)
-    ```
+```go
+  call(b.*)
+```
 
-    ```go
-      execute(b.*)
-    ```
+```go
+  execute(b.*)
+```
 
 #### function declaration w/wildcard arguments
-    ```go
-      call(http.HandleFunc(d, s))
-    ```
+```go
+  call(http.HandleFunc(d, s))
+```
 
 #### wildcard function name w/explicit arguments
       execute((w http.ResponseWriter, r *http.Request))
 
-#### doesn't work yet 
-    TODO
+#### doesn't work yet - TODO
 
 sub-pkg && method name
-    ```go
-      execute(pkg/blah())
-    ```
+```go
+  execute(pkg/blah())
+```
 
 sub-pkg && struct && method-name
-    ```go
-      execute(pkg/struct.b())
-    ```
+```go
+  execute(pkg/struct.b())
+```
 
-#### struct && method name
-    TODO
-    ```go
-      execute(struct.b())
-    ```
-
+#### struct && method name - TODO
+```go
+  execute(struct.b())
+```
 
 ### Advice:
 
@@ -300,7 +299,7 @@ sub-pkg && struct && method-name
 
   We currently support the following advice:
 
-    call examples:
+#### call examples:
     ```go
       some.stuff()
     ```
@@ -324,7 +323,7 @@ sub-pkg && struct && method-name
       somewrapper(some.stuff())
     ```
 
-    execute examples:
+#### execute examples:
     ```go
       func stuff() {
         fmt.Println("stuff")
@@ -347,7 +346,7 @@ sub-pkg && struct && method-name
       }
     ```
 
-    within examples:
+#### within examples:
     ```go
       func blah() {
         slowCall()
@@ -367,14 +366,14 @@ sub-pkg && struct && method-name
 
 ### Goals
 
-* fast - obviously there will always be greater overhead than just
+* FAST - obviously there will always be greater overhead than just
   running go build but we don't want this to be obscene - right now it's
   a little obscene
 
-* correct - it goes w/out saying this is highly important to be as
+* CORRECT - it goes w/out saying this is highly important to be as
   correct as possible w/our code generation
 
-* no code modifications - my main use cases involve *not* modifying code
+* NO CODE MODIFICATIONS - my main use cases involve *not* modifying code
   so that is why we initially did not support annotations - I'm not
   opposed to adding these but that's not my intended goal
 
@@ -457,6 +456,9 @@ support a set of keywords that one can use in their aspects.
     If you use 'mName' within your within advice it will translate to a
 string representation of the joinpoint found by your within pointcut.
 
+  We'd appreciate help from the community formulating a more formal
+approach for this. Namespacing, the set of keywords supported, etc.
+
 ### Differences
 
   There are many differences between this and other AOP implementations
@@ -484,6 +486,9 @@ are definitely welcome.
   For a point of reference - on a well known web application it takes 12
 seconds to build versus 1.59 seconds with just go build.
 
+  We'd very much like help from the community in refactoring some of
+these performance problems.
+
 ### Tests
 
   The tests are very brittle right now and are more functional than unit
@@ -492,6 +497,9 @@ stuff is replaced with AST replacement transformations the tests should be much 
 
   I really don't like the fact that the tests are the way they are right
 now but just need to ensure certain things work until we refactor it.
+
+  We would appreciate any help from the community in refactoring the
+code so the tests aren't big blocks of text - no need for that.
 
 ### What You Should Know Before Using
 
@@ -567,7 +575,7 @@ right now
 
   * documentation
 
-  * sample aspects - aspects [should be shared](https://github.com/deferpanic/loom)
+  * sample aspects - aspects [should be shared on the loom](https://github.com/deferpanic/loom)
     - no need to re-invent the wheel
 
 ### Roadmap

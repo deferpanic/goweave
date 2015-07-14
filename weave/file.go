@@ -33,6 +33,7 @@ func (w *Weave) reWriteFile(curfile string, out string, importsNeeded []string) 
 
 }
 
+// fileAsStr reads path file and returns it as a string
 func fileAsStr(path string) string {
 	buf, err := ioutil.ReadFile(path)
 	if err != nil {

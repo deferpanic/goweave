@@ -70,28 +70,3 @@ func (w *Weave) parsePointCut(body string) (Pointcut, error) {
 		return Pointcut{}, errors.New("invalid pointcut" + body)
 	}
 }
-
-/*
-
-	::::TODO::::
-
-  * partial match method name
-    ```go
-      "b"
-    ```
-
-  * sub-pkg && method name
-    ```go
-      pkg/blah
-    ```
-
-  * struct && method name
-    ```go
-      struct.b
-    ```
-
-  * sub-pkg && struct && method-name
-    ```go
-      pkg/struct.b
-    ```
-*/
