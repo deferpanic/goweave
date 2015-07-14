@@ -16,6 +16,7 @@ func (w *Weave) buildDir() string {
 	return strings.TrimSpace(string(out))
 }
 
+// buildDir determines what the root build dir is
 func buildDir() string {
 	out, err := exec.Command("bash", "-c", "pwd").CombinedOutput()
 	if err != nil {

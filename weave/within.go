@@ -84,6 +84,7 @@ type WithinBlock struct {
 	fset          *token.FileSet
 }
 
+// iterateBodyStatements places within advice when a joinpoint is found
 func (wb *WithinBlock) iterateBodyStatements(w *Weave) (string, int, []string) {
 	rout := ""
 
@@ -112,6 +113,7 @@ func grabMethodName(a ast.Stmt) string {
 	}
 }
 
+// insertInWithin places before/after advice around a statement
 func (wb *WithinBlock) insertInWithin(a ast.Stmt, w *Weave) string {
 	rout := ""
 
