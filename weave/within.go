@@ -46,7 +46,7 @@ func (w *Weave) applyWithinJP(fname string, stuff string) string {
 				fpk = fn.Name.Name
 			}
 
-			if fn.Name.Name == fpk && containArgs(pk, fn.Type.Params.List) {
+			if fn.Name.Name == fpk && containArgs(pk, fn) {
 
 				wb := WithinBlock{
 					name:          fn.Name.Name,

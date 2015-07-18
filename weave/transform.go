@@ -336,7 +336,7 @@ func (w *Weave) applyExecutionJP(fname string, stuff string) string {
 				fpk = fn.Name.Name
 			}
 
-			if fn.Name.Name == fpk && containArgs(pk, fn.Type.Params.List) {
+			if fn.Name.Name == fpk && containArgs(pk, fn) {
 
 				// begin line
 				begin := fset.Position(fn.Body.Lbrace).Line
