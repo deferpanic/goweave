@@ -1,7 +1,7 @@
 goweave
   Aspect Oriented Programming for Go
 
-[![wercker status](https://app.wercker.com/status/7d7912cec649bc9763736051f64da3fa/s "wercker status")](https://app.wercker.com/project/bykey/7d7912cec649bc9763736051f64da3fa)
+[![wercker status](https://app.wercker.com/status/7d7912cec649bc9763736051f64da3fa/s/master "wercker status")](https://app.wercker.com/project/bykey/7d7912cec649bc9763736051f64da3fa)
 
 [![GoDoc](https://godoc.org/github.com/deferpanic/goweave?status.svg)](https://godoc.org/github.com/deferpanic/goweave)
 
