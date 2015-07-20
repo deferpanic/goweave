@@ -2,6 +2,7 @@ package weave
 
 import (
 	"go/ast"
+	"os"
 	"strconv"
 	"strings"
 	"testing"
@@ -34,7 +35,7 @@ func main() {
 `
 	w := NewWeave()
 
-	w.writeOut("/tmp/blah", f1)
+	w.writeOut(os.TempDir()+"/blah", f1)
 
 	aspect := Aspect{
 		advize: Advice{
@@ -49,7 +50,7 @@ func main() {
 	aspects = append(aspects, aspect)
 	w.aspects = aspects
 
-	after := w.applyAroundAdvice("/tmp/blah")
+	after := w.applyAroundAdvice(os.TempDir() + "/blah")
 
 	if after != expected {
 		t.Error(after)
@@ -89,7 +90,7 @@ func main() {
 	time.Sleep(1 * time.Second)
 }`
 
-	w.writeOut("/tmp/blah_test_go", f1)
+	w.writeOut(os.TempDir()+"/blah_test_go", f1)
 
 	aspect2 := Aspect{
 		advize: Advice{
@@ -108,7 +109,7 @@ func main() {
 
 	rootpkg := w.rootPkg()
 
-	after, _ := w.processGoRoutines("/tmp/blah_test_go", rootpkg)
+	after, _ := w.processGoRoutines(os.TempDir()+"/blah_test_go", rootpkg)
 
 	expected :=
 		`package main
@@ -207,7 +208,7 @@ func main() {
 
 	w := &Weave{}
 
-	w.writeOut("/tmp/blah", f1)
+	w.writeOut(os.TempDir()+"/blah", f1)
 
 	aspect := Aspect{
 		advize: Advice{
@@ -224,7 +225,7 @@ func main() {
 	aspects = append(aspects, aspect)
 	w.aspects = aspects
 
-	after := w.applyExecutionJP("/tmp/blah", f1)
+	after := w.applyExecutionJP(os.TempDir()+"/blah", f1)
 
 	if after != expected {
 		t.Error(after)
@@ -268,7 +269,7 @@ fmt.Println("before main")
 
 	w := &Weave{}
 
-	w.writeOut("/tmp/blah", f1)
+	w.writeOut(os.TempDir()+"/blah", f1)
 
 	aspect := Aspect{
 		advize: Advice{
@@ -284,7 +285,7 @@ fmt.Println("before main")
 	aspects = append(aspects, aspect)
 	w.aspects = aspects
 
-	after := w.applyExecutionJP("/tmp/blah", f1)
+	after := w.applyExecutionJP(os.TempDir()+"/blah", f1)
 
 	if after != expected {
 		t.Error(after)
@@ -327,7 +328,7 @@ func main() {
 
 	w := &Weave{}
 
-	w.writeOut("/tmp/blah", f1)
+	w.writeOut(os.TempDir()+"/blah", f1)
 
 	aspect := Aspect{
 		advize: Advice{
@@ -343,7 +344,7 @@ func main() {
 	aspects = append(aspects, aspect)
 	w.aspects = aspects
 
-	after := w.applyExecutionJP("/tmp/blah", f1)
+	after := w.applyExecutionJP(os.TempDir()+"/blah", f1)
 
 	if after != expected {
 		t.Error(after)
@@ -386,7 +387,7 @@ func main() {
 
 	w := &Weave{}
 
-	w.writeOut("/tmp/blah", f1)
+	w.writeOut(os.TempDir()+"/blah", f1)
 
 	aspect := Aspect{
 		advize: Advice{
@@ -402,7 +403,7 @@ func main() {
 	aspects = append(aspects, aspect)
 	w.aspects = aspects
 
-	after := w.applyExecutionJP("/tmp/blah", f1)
+	after := w.applyExecutionJP(os.TempDir()+"/blah", f1)
 
 	if after != expected {
 		t.Error(after)
@@ -447,7 +448,7 @@ func main() {
 
 	w := &Weave{}
 
-	w.writeOut("/tmp/blah", f1)
+	w.writeOut(os.TempDir()+"/blah", f1)
 
 	aspect := Aspect{
 		advize: Advice{
@@ -463,7 +464,7 @@ func main() {
 	aspects = append(aspects, aspect)
 	w.aspects = aspects
 
-	after := w.applyExecutionJP("/tmp/blah", f1)
+	after := w.applyExecutionJP(os.TempDir()+"/blah", f1)
 
 	if after != expected {
 		t.Error("##" + after + "##")
@@ -507,7 +508,7 @@ func main() {
 
 	w := &Weave{}
 
-	w.writeOut("/tmp/blah", f1)
+	w.writeOut(os.TempDir()+"/blah", f1)
 
 	aspect := Aspect{
 		advize: Advice{
@@ -524,7 +525,7 @@ func main() {
 	aspects = append(aspects, aspect)
 	w.aspects = aspects
 
-	after := w.applyExecutionJP("/tmp/blah", f1)
+	after := w.applyExecutionJP(os.TempDir()+"/blah", f1)
 
 	if after != expected {
 		t.Error(after)
@@ -569,7 +570,7 @@ func main() {
 
 	w := &Weave{}
 
-	w.writeOut("/tmp/blah", f1)
+	w.writeOut(os.TempDir()+"/blah", f1)
 
 	aspect := Aspect{
 		advize: Advice{
@@ -585,7 +586,7 @@ func main() {
 	aspects = append(aspects, aspect)
 	w.aspects = aspects
 
-	after := w.applyExecutionJP("/tmp/blah", f1)
+	after := w.applyExecutionJP(os.TempDir()+"/blah", f1)
 
 	if after != expected {
 		t.Error(after)
@@ -628,7 +629,7 @@ func main() {
 
 	w := &Weave{}
 
-	w.writeOut("/tmp/blah", f1)
+	w.writeOut(os.TempDir()+"/blah", f1)
 
 	aspect := Aspect{
 		advize: Advice{
@@ -644,7 +645,7 @@ func main() {
 	aspects = append(aspects, aspect)
 	w.aspects = aspects
 
-	after := w.applyExecutionJP("/tmp/blah", f1)
+	after := w.applyExecutionJP(os.TempDir()+"/blah", f1)
 
 	if after != expected {
 		t.Error(after)
@@ -695,7 +696,7 @@ func main() {
 
 	w := &Weave{}
 
-	w.writeOut("/tmp/blah", f1)
+	w.writeOut(os.TempDir()+"/blah", f1)
 
 	aspect := Aspect{
 		advize: Advice{
@@ -711,7 +712,7 @@ func main() {
 	aspects = append(aspects, aspect)
 	w.aspects = aspects
 
-	after := w.applyExecutionJP("/tmp/blah", f1)
+	after := w.applyExecutionJP(os.TempDir()+"/blah", f1)
 
 	if after != expected {
 		t.Error(after)
@@ -758,7 +759,7 @@ fmt.Println("before call")
 
 	w := &Weave{}
 
-	w.writeOut("/tmp/blah", f1)
+	w.writeOut(os.TempDir()+"/blah", f1)
 
 	aspect := Aspect{
 		advize: Advice{
@@ -774,7 +775,7 @@ fmt.Println("before call")
 	aspects = append(aspects, aspect)
 	w.aspects = aspects
 
-	after := w.applyCallAdvice("/tmp/blah", f1)
+	after := w.applyCallAdvice(os.TempDir()+"/blah", f1)
 
 	if after != expected {
 		t.Error(after)
@@ -825,7 +826,7 @@ fmt.Println("strconv called")
 
 	w := &Weave{}
 
-	w.writeOut("/tmp/blah", f1)
+	w.writeOut(os.TempDir()+"/blah", f1)
 
 	aspect := Aspect{
 		advize: Advice{
@@ -841,7 +842,7 @@ fmt.Println("strconv called")
 	aspects = append(aspects, aspect)
 	w.aspects = aspects
 
-	after := w.applyCallAdvice("/tmp/blah", f1)
+	after := w.applyCallAdvice(os.TempDir()+"/blah", f1)
 
 	if after != expected {
 		t.Error(after)
@@ -864,9 +865,9 @@ func main() {
 	s := "github.com/some/stuff"
 
 	w := NewWeave()
-	w.writeOut("/tmp/blah", f1)
+	w.writeOut(os.TempDir()+"/blah", f1)
 
-	af := w.ParseAST("/tmp/blah")
+	af := w.ParseAST(os.TempDir() + "/blah")
 
 	pruned := w.pruneImports(af, s)
 
@@ -919,14 +920,14 @@ fmt.Println(myCnt)
 
 	w := NewWeave()
 
-	w.writeOut("/tmp/blah", f1)
+	w.writeOut(os.TempDir()+"/blah", f1)
 
 	aspect := Aspect{
 		advize: Advice{
 			before: "myCnt += 1",
 		},
 		pointkut: Pointcut{
-			def:  "getStuff(int i)",
+			def:  "getStuff(int)",
 			kind: 2,
 		},
 	}
@@ -958,7 +959,7 @@ fmt.Println(myCnt)
 
 	w.aspects = aspects
 
-	fp := "/tmp/blah"
+	fp := os.TempDir() + "/blah"
 	stuff := w.applyGlobalAdvice(fp, f1)
 	w.writeOut(fp, stuff)
 
@@ -1007,7 +1008,7 @@ fmt.Println("strconv called")
 
 	w := NewWeave()
 
-	w.writeOut("/tmp/blah", f1)
+	w.writeOut(os.TempDir()+"/blah", f1)
 
 	aspect := Aspect{
 		advize: Advice{
@@ -1023,7 +1024,7 @@ fmt.Println("strconv called")
 	aspects = append(aspects, aspect)
 	w.aspects = aspects
 
-	after := w.applyCallAdvice("/tmp/blah", f1)
+	after := w.applyCallAdvice(os.TempDir()+"/blah", f1)
 
 	if after != expected {
 		t.Error(after)
@@ -1063,7 +1064,7 @@ strconv.Itoa(2))
 
 	w := NewWeave()
 
-	w.writeOut("/tmp/blah", f1)
+	w.writeOut(os.TempDir()+"/blah", f1)
 
 	aspect := Aspect{
 		advize: Advice{
@@ -1079,7 +1080,7 @@ strconv.Itoa(2))
 	aspects = append(aspects, aspect)
 	w.aspects = aspects
 
-	after := w.applyCallAdvice("/tmp/blah", f1)
+	after := w.applyCallAdvice(os.TempDir()+"/blah", f1)
 
 	if after != expected {
 		t.Error(after)
@@ -1119,7 +1120,7 @@ fmt.Println("strconv called")
 
 	w := NewWeave()
 
-	w.writeOut("/tmp/blah", f1)
+	w.writeOut(os.TempDir()+"/blah", f1)
 
 	aspect := Aspect{
 		advize: Advice{
@@ -1135,7 +1136,7 @@ fmt.Println("strconv called")
 	aspects = append(aspects, aspect)
 	w.aspects = aspects
 
-	after := w.applyCallAdvice("/tmp/blah", f1)
+	after := w.applyCallAdvice(os.TempDir()+"/blah", f1)
 
 	if after != expected {
 		t.Error(after)
@@ -1185,7 +1186,7 @@ fmt.Println("strconv called")
 
 	w := NewWeave()
 
-	w.writeOut("/tmp/blah", f1)
+	w.writeOut(os.TempDir()+"/blah", f1)
 
 	aspect := Aspect{
 		advize: Advice{
@@ -1201,7 +1202,7 @@ fmt.Println("strconv called")
 	aspects = append(aspects, aspect)
 	w.aspects = aspects
 
-	after := w.applyCallAdvice("/tmp/blah", f1)
+	after := w.applyCallAdvice(os.TempDir()+"/blah", f1)
 
 	if after != expected {
 		t.Error(printWLines(after))
@@ -1244,7 +1245,7 @@ fmt.Println("query took %d seconds", t)
 
 	w := NewWeave()
 
-	w.writeOut("/tmp/blah", f1)
+	w.writeOut(os.TempDir()+"/blah", f1)
 
 	aspect := Aspect{
 		advize: Advice{
@@ -1271,7 +1272,7 @@ fmt.Println("query took %d seconds", t)
 	aspects = append(aspects, aspect2)
 	w.aspects = aspects
 
-	after := w.applyCallAdvice("/tmp/blah", f1)
+	after := w.applyCallAdvice(os.TempDir()+"/blah", f1)
 
 	if after != expected {
 		t.Error(printWLines(after))
@@ -1316,7 +1317,7 @@ fmt.Println("query took %d seconds", t)
 
 	w := NewWeave()
 
-	w.writeOut("/tmp/blah", f1)
+	w.writeOut(os.TempDir()+"/blah", f1)
 
 	aspect := Aspect{
 		advize: Advice{
@@ -1343,7 +1344,7 @@ fmt.Println("query took %d seconds", t)
 	aspects = append(aspects, aspect2)
 	w.aspects = aspects
 
-	after := w.applyCallAdvice("/tmp/blah", f1)
+	after := w.applyCallAdvice(os.TempDir()+"/blah", f1)
 
 	if after != expected {
 		t.Error(printWLines(after))

@@ -74,6 +74,10 @@ func (w *Weave) Run() {
 // this is fairly heavy/expensive/pos right now
 func (w *Weave) VisitFile(fp string, fi os.FileInfo, err error) error {
 
+	if fi == nil || err != nil {
+		return err
+	}
+
 	matched, err := filepath.Match("*.go", fi.Name())
 	if err != nil {
 		w.flog.Println(err)

@@ -14,15 +14,6 @@ type Pointcut struct {
 	kind     int
 }
 
-// pointCutType returns a map of id to human expression of pointcut types
-func pointCutType() map[int]string {
-	return map[int]string{
-		1: "call",
-		2: "execution",
-		3: "within",
-	}
-}
-
 // set def extracts the joinpoint from a pointcut definition
 func setDef(t string) (int, string, error) {
 

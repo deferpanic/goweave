@@ -1,6 +1,7 @@
 package weave
 
 import (
+	"os"
 	"testing"
 )
 
@@ -62,7 +63,7 @@ func main() {
 
 	w := &Weave{}
 
-	w.writeOut("/tmp/blah", f1)
+	w.writeOut(os.TempDir()+"/blah", f1)
 
 	aspect := Aspect{
 		advize: Advice{
@@ -79,7 +80,7 @@ func main() {
 	aspects = append(aspects, aspect)
 	w.aspects = aspects
 
-	after := w.applyWithinJP("/tmp/blah", f1)
+	after := w.applyWithinJP(os.TempDir()+"/blah", f1)
 
 	if after != expected {
 		t.Error(after)
