@@ -86,7 +86,7 @@ func (w *Weave) applyCallAdvice(fname string, stuff string) string {
 		fset := token.NewFileSet()
 		file, err := parser.ParseFile(fset, fname, rout, parser.Mode(0))
 		if err != nil {
-			w.flog.Println("Failed to parse source: %s", err.Error())
+			w.flog.Println("Failed to parse source:", err.Error())
 		}
 
 		// look for call expressions - call joinpoints

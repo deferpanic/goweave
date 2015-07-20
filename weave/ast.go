@@ -9,8 +9,12 @@ import (
 
 // stolen from http://golang.org/src/cmd/fix/fix.go
 func isPkgDot(expr ast.Expr, pkg, name string) bool {
-	sel, ok := expr.(*ast.SelectorExpr)
-	return ok && isIdent(sel.X, pkg) && isIdent(sel.Sel, name)
+	if len(pkg) > 0 {
+		sel, ok := expr.(*ast.SelectorExpr)
+		return ok && isIdent(sel.X, pkg) && isIdent(sel.Sel, name)
+	} else {
+		return isIdent(expr, name)
+	}
 }
 
 // stolen from http://golang.org/src/cmd/fix/fix.go
@@ -42,58 +46,79 @@ func parseExpr(s string) ast.Expr {
 // 2) order of arguments
 // 3) no args
 // 4) no simple args
-func containArgs(pk string, p []*ast.Field) bool {
+func containArgs(pk string, paramList []*ast.Field) bool {
+
+	/*
+		this function will return a channel through which
+		we can get every argument's type of pfn
+	*/
+	nextarg := func(params []*ast.Field, stop chan int) <-chan ast.Expr {
+		argTypeChnl := make(chan ast.Expr)
+		go func() {
+			defer close(argTypeChnl)
+			for _, arg := range params {
+				for range arg.Names {
+					select {
+					case argTypeChnl <- arg.Type:
+					case <-stop:
+						return
+					}
+				}
+			}
+		}()
+		return argTypeChnl
+	}
+
+	stop := make(chan int)
+	defer close(stop)
+
+	argTypeChnl := nextarg(paramList, stop)
+
+	//--------------------
 
 	pk = strings.Split(pk, "(")[1]
 	pk = strings.Split(pk, ")")[0]
 
-	argz := strings.Split(pk, ",")
+	arglist := strings.Split(pk, ",")
 
-	if (len(argz) == 1) && (argz[0] == "") {
-		argz = []string{}
+	if (len(arglist) == 1) && (arglist[0] == "") {
+		arglist = []string{}
 	}
 
-	// early bail if mis-matched argc
-	if len(argz) != len(p) {
+	if len(arglist) == 0 && len(paramList) != 0 {
 		return false
 	}
 
-	xtrue := 0
+	// Check whether every argument's type is the same
+	for _, argtype := range arglist {
 
-	// for now we ignore simple args like string, int
-	// also - these are un-ordered right now..
-	// also - no support for no args
-	for i := 0; i < len(argz); i++ {
-		if strings.Contains(argz[i], ".") {
-			s := strings.Split(argz[i], ".")
-			pkg := strings.TrimSpace(s[0])
-			iname := strings.TrimSpace(s[1])
+		argtype = strings.TrimSpace(argtype)
+		typelist := strings.Split(argtype, ".")
+		isptr := (argtype[:1] == "*")
 
-			if strings.Contains(pkg, "*") {
-				pkg = strings.Replace(pkg, "*", "", -1)
-				for _, field := range p {
-					if isPtrPkgDot(field.Type, pkg, iname) {
-						xtrue += 1
-					}
-				}
+		pkg := ""
+		name := typelist[0]
 
-			} else {
-				for _, field := range p {
+		compareArgType := isPkgDot
+		if isptr {
+			compareArgType = isPtrPkgDot
+		}
 
-					if isPkgDot(field.Type, pkg, iname) {
-						xtrue += 1
-					}
-				}
+		// pkg.type or *pkg.type
+		if len(typelist) == 2 {
+			pkg = typelist[0]
+			name = typelist[1]
+			if isptr {
+				pkg = pkg[1:]
 			}
+		}
 
-		} else {
-			xtrue += 1
+		nextArgType, ok := <-argTypeChnl
+
+		if !ok || !compareArgType(nextArgType, pkg, name) {
+			return false
 		}
 	}
 
-	if xtrue == len(argz) {
-		return true
-	}
-
-	return false
+	return true
 }
