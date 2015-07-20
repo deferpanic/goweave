@@ -46,17 +46,17 @@ func parseExpr(s string) ast.Expr {
 // 2) order of arguments
 // 3) no args
 // 4) no simple args
-func containArgs(pk string, fn *ast.FuncDecl) bool {
+func containArgs(pk string, paramList []*ast.Field) bool {
 
 	/*
 		this function will return a channel through which
 		we can get every argument's type of pfn
 	*/
-	nextarg := func(pfn *ast.FuncDecl, stop chan int) <-chan ast.Expr {
+	nextarg := func(params []*ast.Field, stop chan int) <-chan ast.Expr {
 		argTypeChnl := make(chan ast.Expr)
 		go func() {
 			defer close(argTypeChnl)
-			for _, arg := range pfn.Type.Params.List {
+			for _, arg := range params {
 				for range arg.Names {
 					select {
 					case argTypeChnl <- arg.Type:
@@ -72,7 +72,7 @@ func containArgs(pk string, fn *ast.FuncDecl) bool {
 	stop := make(chan int)
 	defer close(stop)
 
-	argTypeChnl := nextarg(fn, stop)
+	argTypeChnl := nextarg(paramList, stop)
 
 	//--------------------
 
@@ -85,11 +85,16 @@ func containArgs(pk string, fn *ast.FuncDecl) bool {
 		arglist = []string{}
 	}
 
+	if len(arglist) == 0 && len(paramList) != 0 {
+		return false
+	}
+
 	// Check whether every argument's type is the same
 	for _, argtype := range arglist {
 
+		argtype = strings.TrimSpace(argtype)
 		typelist := strings.Split(argtype, ".")
-		isptr := (argtype[0] == '*')
+		isptr := (argtype[:1] == "*")
 
 		pkg := ""
 		name := typelist[0]

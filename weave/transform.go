@@ -86,7 +86,7 @@ func (w *Weave) applyCallAdvice(fname string, stuff string) string {
 		fset := token.NewFileSet()
 		file, err := parser.ParseFile(fset, fname, rout, parser.Mode(0))
 		if err != nil {
-			w.flog.Println("Failed to parse source: %s", err.Error())
+			w.flog.Println("Failed to parse source:", err.Error())
 		}
 
 		// look for call expressions - call joinpoints
@@ -336,7 +336,7 @@ func (w *Weave) applyExecutionJP(fname string, stuff string) string {
 				fpk = fn.Name.Name
 			}
 
-			if fn.Name.Name == fpk && containArgs(pk, fn) {
+			if fn.Name.Name == fpk && containArgs(pk, fn.Type.Params.List) {
 
 				// begin line
 				begin := fset.Position(fn.Body.Lbrace).Line
