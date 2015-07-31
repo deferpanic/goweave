@@ -208,7 +208,7 @@ func (w *Weave) findAspects() []string {
 
 	files, _ := ioutil.ReadDir("./")
 	for _, f := range files {
-		if strings.Contains(f.Name(), ".weave") {
+		if strings.HasSuffix(f.Name(), ".weave") {
 			aspects = append(aspects, f.Name())
 			log.Println(f.Name())
 		}
