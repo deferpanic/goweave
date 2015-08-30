@@ -9,16 +9,12 @@ goweave
 ![Weave](http://i.imgur.com/JUUgIuv.png)
 
 ### WARNING - Major Hackage
- in the most derogatory form of the word
 
   This really isn't meant to be used by anyone yet - definitely not in a
 production environment - you have been warned!
 
   Many 'design decisions' were not decisions at all - they were simply
-the "most simplest thing that could work". Lots of work to do - if you
-are going to spew:
-
-![spew into this](http://i.imgur.com/LLvYjvP.jpg)
+the "most simplest thing that could work". Lots of work left to do.
 
 ### TOC
 
@@ -472,7 +468,7 @@ the future but it wasn't a primary usecase for me so I didn't add them.
 
 ### Performance
 
-  SUCKS right now. Lots of needless reading/writing of files. Part of
+  Is pretty bad right now. Lots of needless reading/writing of files. Part of
 this was cause it started out with regex/line parsing and slowly moved
 towards AST manipulating.
 
@@ -542,7 +538,7 @@ right now
   - with return arguments
   - partial function matching
 
-* scope - lol
+* scope
   - for the regex && line-editing stuff this is completely naive - pulls
     pls
 
