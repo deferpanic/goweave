@@ -215,6 +215,7 @@ rather the computer do this for us.
     -- that is - we don't want to modify go source
 
   We support {call, execute, within} pointcut primitives right now:
+  Also we are hacking in local/global get/sets and declarations.
 
 __call__:
 
@@ -230,6 +231,20 @@ __within__:
 
     These happen for *every* statement within a function body
 declaration.
+
+----------
+
+__get__:
+
+  These fire when a local/global variable has a get operation.
+
+__set__:
+
+  These fire when a local/global variable has a set operation.
+
+__declaration__:
+
+  This fires when a variable is declared.
 
 
   All pointcuts are currently defined only on functions. Struct field
