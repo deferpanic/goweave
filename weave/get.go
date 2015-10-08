@@ -7,8 +7,8 @@ import (
 	"strings"
 )
 
-// applySetJP applies any advice for set joinpoints
-func (w *Weave) applySetJP(fname string, stuff string) string {
+// applyGetJP applies any advice for get joinpoints
+func (w *Weave) applyGetJP(fname string, stuff string) string {
 
 	rout := stuff
 
@@ -17,7 +17,7 @@ func (w *Weave) applySetJP(fname string, stuff string) string {
 	for i := 0; i < len(w.aspects); i++ {
 
 		aspect := w.aspects[i]
-		if aspect.pointkut.kind != 5 {
+		if aspect.pointkut.kind != 4 {
 			continue
 		}
 
@@ -38,21 +38,30 @@ func (w *Weave) applySetJP(fname string, stuff string) string {
 			}
 
 			for x := 0; x < len(fn.Body.List); x++ {
-				as, ok2 := fn.Body.List[x].(*ast.SendStmt)
+				//  : *ast.ExprStmt
+				as, ok2 := fn.Body.List[x].(*ast.ExprStmt)
 				if !ok2 {
 					continue
 				}
 
-				as3, ok3 := as.Chan.(*ast.Ident)
+				blah, ok3 := as.X.(*ast.CallExpr)
 				if !ok3 {
 					continue
 				}
 
-				if as3.Name != pk {
+				fn2, ok4 := blah.Args[0].(*ast.UnaryExpr)
+				if !ok4 {
 					continue
 				}
 
-				// figure out type
+				blah2, ok4 := fn2.X.(*ast.Ident)
+				if !ok4 {
+					continue
+				}
+
+				if pk != blah2.Name {
+					continue
+				}
 
 				begin := fset.Position(as.Pos()).Line - 1
 				after := fset.Position(as.End()).Line + 1
@@ -72,8 +81,8 @@ func (w *Weave) applySetJP(fname string, stuff string) string {
 				}
 
 			}
-		}
 
+		}
 	}
 
 	if len(importsNeeded) > 0 {

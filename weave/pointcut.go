@@ -17,7 +17,7 @@ type Pointcut struct {
 // set def extracts the joinpoint from a pointcut definition
 func setDef(t string) (int, string, error) {
 
-	m := `(execute|call|within|get|set)\((.*)\)`
+	m := `(execute|call|within|get|set|declaration)\((.*)\)`
 	re, err := regexp.Compile(m)
 	if err != nil {
 		return 0, "", errors.New("bad regex")
@@ -35,6 +35,8 @@ func setDef(t string) (int, string, error) {
 			return 4, res[0][2], nil
 		} else if res[0][1] == "set" {
 			return 5, res[0][2], nil
+		} else if res[0][1] == "declaration" {
+			return 6, res[0][2], nil
 		} else {
 			return 0, "", errors.New("bad pointcut")
 		}

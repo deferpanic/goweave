@@ -18,6 +18,7 @@ func TestSetDef(t *testing.T) {
 		{"execute(FuncWithArgsAndReturn(iarg int, sarg string) (int, error))", 2, "FuncWithArgsAndReturn(iarg int, sarg string) (int, error)"},
 		{"get(x)", 4, "x"},
 		{"set(ch)", 5, "ch"},
+		{"declaration(ch)", 6, "ch"},
 	}
 
 	for _, tt := range pkTests {

@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestApplySetJP(t *testing.T) {
+func TestApplyGetJP(t *testing.T) {
 	f1 := `package main
 
 import "fmt"
@@ -25,11 +25,11 @@ import "fmt"
 
 func main() {
     ch := make(chan int, 2)
-fmt.Println("yo joe")
     ch <- 1
-fmt.Println("yo joe")
     ch <- 2
+fmt.Println("yo joe")
     fmt.Println(<-ch)
+fmt.Println("yo joe")
     fmt.Println(<-ch)
 }
 `
@@ -44,7 +44,7 @@ fmt.Println("yo joe")
 		},
 		pointkut: Pointcut{
 			def:  "ch",
-			kind: 5,
+			kind: 4,
 		},
 	}
 
@@ -52,12 +52,12 @@ fmt.Println("yo joe")
 	aspects = append(aspects, aspect)
 	w.aspects = aspects
 
-	after := w.applySetJP(os.TempDir()+"/blah", f1)
+	after := w.applyGetJP(os.TempDir()+"/blah", f1)
 
 	if after != expected {
 		t.Error(after)
 		t.Error(expected)
-		t.Error("applySetJP is not transforming correctly")
+		t.Error("applyGetJP is not transforming correctly")
 	}
 
 }
