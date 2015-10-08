@@ -32,7 +32,7 @@ the "most simplest thing that could work". Lots of work left to do.
 
   [Info](https://github.com/deferpanic/goweave#info)
 
-  [Reserved Keywords](https://github.com/deferpanic/goweave#reserved_keywords)
+  [Reserved Keywords](https://github.com/deferpanic/goweave#reserved-keywords)
 
   [Differences](https://github.com/deferpanic/goweave#differences)
 
@@ -445,12 +445,15 @@ that needs to be refactored
 ### Reserved Keywords
 
   Right now the only time you'll run into reserved keywords are in the
-experimental 'within' advice section although there is an intention to
+experimental 'within' and 'get'/'set' advice section although there is an intention to
 support a set of keywords that one can use in their aspects.
 
   * mName
     If you use 'mName' within your within advice it will translate to a
 string representation of the joinpoint found by your within pointcut.
+
+  * mAvars
+    this is a list of abstract variables used within get/set advice
 
   We'd appreciate help from the community formulating a more formal
 approach for this. Namespacing, the set of keywords supported, etc.
@@ -573,6 +576,8 @@ right now
 
   * sample aspects - aspects [should be shared on the loom](https://github.com/deferpanic/loom)
     - no need to re-invent the wheel
+
+  Need helping visualizing what you are looking at? Check out http://goast.yuroyoro.net/
 
 ### Roadmap
 

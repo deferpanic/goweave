@@ -108,6 +108,10 @@ func (w *Weave) VisitFile(fp string, fi os.FileInfo, err error) error {
 		stuff = w.applyWithinJP(fp, stuff)
 		w.writeOut(fp, stuff)
 
+		// provides advice matching against set join points
+		stuff = w.applySetJP(fp, stuff)
+		w.writeOut(fp, stuff)
+
 		// finally re-work imports on each
 		// to ensure files we didn't apply aspects to have correct
 		// imports (eg: main.go)
