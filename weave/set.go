@@ -38,24 +38,49 @@ func (w *Weave) applySetJP(fname string, stuff string) string {
 			}
 
 			for x := 0; x < len(fn.Body.List); x++ {
+				begin := 0
+				after := 0
+
 				as, ok2 := fn.Body.List[x].(*ast.SendStmt)
 				if !ok2 {
-					continue
-				}
 
-				as3, ok3 := as.Chan.(*ast.Ident)
-				if !ok3 {
-					continue
-				}
+					// look for assignment
+					//*ast.AssignStmt
+					as, ok3 := fn.Body.List[x].(*ast.AssignStmt)
+					if !ok3 {
+						continue
+					}
 
-				if as3.Name != pk {
-					continue
+					// no multiple-return support yet
+					blah := as.Lhs[0].(*ast.Ident).Name
+
+					if pk != blah {
+						continue
+					}
+
+					begin = fset.Position(as.Pos()).Line - 1
+					after = fset.Position(as.End()).Line + 1
+
+				} else {
+					// look for channel
+					as3, ok3 := as.Chan.(*ast.Ident)
+					if !ok3 {
+						continue
+					}
+
+					if as3.Name != pk {
+						continue
+					}
+
+					begin = fset.Position(as.Pos()).Line - 1
+					after = fset.Position(as.End()).Line + 1
+
 				}
 
 				// figure out type
 
-				begin := fset.Position(as.Pos()).Line - 1
-				after := fset.Position(as.End()).Line + 1
+				//				begin := fset.Position(as.Pos()).Line - 1
+				//				after := fset.Position(as.End()).Line + 1
 
 				before_advice := aspect.advize.before
 				after_advice := aspect.advize.after

@@ -219,18 +219,15 @@ rather the computer do this for us.
 
 __call__:
 
-    These happen before, after or wrap around calling a method. The code
-is outside of the function.
+    These happen before, after or wrap around calling a method. The code is outside of the function.
 
 __execute__:
 
-    These happen before or after executing a method. The code is put
-inside the method.
+    These happen before or after executing a method. The code is put inside the method.
 
 __within__:
 
-    These happen for *every* statement within a function body
-declaration.
+    These happen for *every* statement within a function body declaration.
 
 ----------
 
@@ -300,80 +297,83 @@ sub-pkg && struct && method-name
 
 ### Advice:
 
-  Behavior to apply.
+Behavior to apply:
 
   * before
   * after
   * around
 
-  Around advice currently only works with call pointcuts.
+Around advice currently only works with call pointcuts.
 
-  We currently support the following advice:
+We currently support the following advice:
 
 #### call examples:
-    ```go
-      some.stuff()
-    ```
 
-    Code will be executed {before, around, after} this call.
+```go
+  some.stuff()
+```
 
-    __call before:__
-    ```go
-      fmt.Println("before")
-      some.stuff()
-    ```
+Code will be executed {before, around, after} this call.
 
-    __call after:__
-    ```go
-      some.stuff()
-      fmt.Println("before")
-    ```
+__call before:__
+```go
+  fmt.Println("before")
+  some.stuff()
+```
 
-    __call around:__
-    ```
-      somewrapper(some.stuff())
-    ```
+__call after:__
+```go
+  some.stuff()
+  fmt.Println("before")
+```
+
+__call around:__
+```
+  somewrapper(some.stuff())
+```
 
 #### execute examples:
-    ```go
-      func stuff() {
-        fmt.Println("stuff")
-      }
-    ```
 
-    __execute before:__
-    ```go
-      func stuff() {
-        fmt.Println("before")
-        fmt.Println("stuff")
-      }
-    ```
+```go
+  func stuff() {
+    fmt.Println("stuff")
+  }
+```
 
-    __execute after:__
-    ```go
-      func stuff() {
-        fmt.Println("stuff")
-        fmt.Println("after")
-      }
-    ```
+__execute before:__
+```go
+  func stuff() {
+    fmt.Println("before")
+    fmt.Println("stuff")
+  }
+```
+
+__execute after:__
+```go
+  func stuff() {
+    fmt.Println("stuff")
+    fmt.Println("after")
+  }
+```
 
 #### within examples:
-    ```go
-      func blah() {
-        slowCall()
-        fastCall()
-      }
-    ```
 
-    __within before:__
-    ```go
-      func blah() {
-        beforeEach()
-        slowCall()
-        beforeEach()
-        fastcall()
-      }
-    ```
+```go
+  func blah() {
+    slowCall()
+    fastCall()
+  }
+```
+
+__within before:__
+```go
+  func blah() {
+    beforeEach()
+    slowCall()
+    beforeEach()
+    fastcall()
+  }
+```
 
 ### Goals
 

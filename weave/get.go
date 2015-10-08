@@ -38,7 +38,6 @@ func (w *Weave) applyGetJP(fname string, stuff string) string {
 			}
 
 			for x := 0; x < len(fn.Body.List); x++ {
-				//  : *ast.ExprStmt
 				as, ok2 := fn.Body.List[x].(*ast.ExprStmt)
 				if !ok2 {
 					continue
@@ -49,18 +48,31 @@ func (w *Weave) applyGetJP(fname string, stuff string) string {
 					continue
 				}
 
+				// can either be a unary || a ident (so far)
 				fn2, ok4 := blah.Args[0].(*ast.UnaryExpr)
 				if !ok4 {
-					continue
-				}
+					// look for ident
 
-				blah2, ok4 := fn2.X.(*ast.Ident)
-				if !ok4 {
-					continue
-				}
+					fn3, ok5 := blah.Args[0].(*ast.Ident)
+					if !ok5 {
+						continue
+					}
 
-				if pk != blah2.Name {
-					continue
+					if pk != fn3.Name {
+						continue
+					}
+
+				} else {
+					// look for channel
+
+					blah2, ok4 := fn2.X.(*ast.Ident)
+					if !ok4 {
+						continue
+					}
+
+					if pk != blah2.Name {
+						continue
+					}
 				}
 
 				begin := fset.Position(as.Pos()).Line - 1
