@@ -17,7 +17,7 @@ func (w *Weave) applyGetJP(fname string, stuff string) string {
 	for i := 0; i < len(w.aspects); i++ {
 
 		aspect := w.aspects[i]
-		if aspect.pointkut.kind != 4 {
+		if !aspect.pointkut.isGet() {
 			continue
 		}
 

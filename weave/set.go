@@ -17,7 +17,7 @@ func (w *Weave) applySetJP(fname string, stuff string) string {
 	for i := 0; i < len(w.aspects); i++ {
 
 		aspect := w.aspects[i]
-		if aspect.pointkut.kind != 5 {
+		if !aspect.pointkut.isSet() {
 			continue
 		}
 

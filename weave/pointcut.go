@@ -14,6 +14,54 @@ type Pointcut struct {
 	kind     int
 }
 
+func (p Pointcut) isCall() bool {
+	if p.kind == 1 {
+		return true
+	} else {
+		return false
+	}
+}
+
+func (p Pointcut) isExecute() bool {
+	if p.kind == 2 {
+		return true
+	} else {
+		return false
+	}
+}
+
+func (p Pointcut) isWithin() bool {
+	if p.kind == 3 {
+		return true
+	} else {
+		return false
+	}
+}
+
+func (p Pointcut) isGet() bool {
+	if p.kind == 4 {
+		return true
+	} else {
+		return false
+	}
+}
+
+func (p Pointcut) isSet() bool {
+	if p.kind == 5 {
+		return true
+	} else {
+		return false
+	}
+}
+
+func (p Pointcut) isDeclaration() bool {
+	if p.kind == 6 {
+		return true
+	} else {
+		return false
+	}
+}
+
 // set def extracts the joinpoint from a pointcut definition
 func setDef(t string) (int, string, error) {
 
