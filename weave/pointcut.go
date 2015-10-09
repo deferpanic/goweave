@@ -14,10 +14,58 @@ type Pointcut struct {
 	kind     int
 }
 
+func (p Pointcut) isCall() bool {
+	if p.kind == 1 {
+		return true
+	} else {
+		return false
+	}
+}
+
+func (p Pointcut) isExecute() bool {
+	if p.kind == 2 {
+		return true
+	} else {
+		return false
+	}
+}
+
+func (p Pointcut) isWithin() bool {
+	if p.kind == 3 {
+		return true
+	} else {
+		return false
+	}
+}
+
+func (p Pointcut) isGet() bool {
+	if p.kind == 4 {
+		return true
+	} else {
+		return false
+	}
+}
+
+func (p Pointcut) isSet() bool {
+	if p.kind == 5 {
+		return true
+	} else {
+		return false
+	}
+}
+
+func (p Pointcut) isDeclaration() bool {
+	if p.kind == 6 {
+		return true
+	} else {
+		return false
+	}
+}
+
 // set def extracts the joinpoint from a pointcut definition
 func setDef(t string) (int, string, error) {
 
-	m := `(execute|call|within)\((.*)\)`
+	m := `(execute|call|within|get|set|declaration)\((.*)\)`
 	re, err := regexp.Compile(m)
 	if err != nil {
 		return 0, "", errors.New("bad regex")
@@ -31,6 +79,12 @@ func setDef(t string) (int, string, error) {
 			return 2, res[0][2], nil
 		} else if res[0][1] == "within" {
 			return 3, res[0][2], nil
+		} else if res[0][1] == "get" {
+			return 4, res[0][2], nil
+		} else if res[0][1] == "set" {
+			return 5, res[0][2], nil
+		} else if res[0][1] == "declaration" {
+			return 6, res[0][2], nil
 		} else {
 			return 0, "", errors.New("bad pointcut")
 		}

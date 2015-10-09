@@ -16,6 +16,9 @@ func TestSetDef(t *testing.T) {
 		{"within(beforeBob)", 3, "beforeBob"},
 		{"execute(FuncWithArgs(iarg int, sarg string))", 2, "FuncWithArgs(iarg int, sarg string)"},
 		{"execute(FuncWithArgsAndReturn(iarg int, sarg string) (int, error))", 2, "FuncWithArgsAndReturn(iarg int, sarg string) (int, error)"},
+		{"get(x)", 4, "x"},
+		{"set(ch)", 5, "ch"},
+		{"declaration(ch)", 6, "ch"},
 	}
 
 	for _, tt := range pkTests {

@@ -32,7 +32,7 @@ the "most simplest thing that could work". Lots of work left to do.
 
   [Info](https://github.com/deferpanic/goweave#info)
 
-  [Reserved Keywords](https://github.com/deferpanic/goweave#reserved_keywords)
+  [Reserved Keywords](https://github.com/deferpanic/goweave#reserved-keywords)
 
   [Differences](https://github.com/deferpanic/goweave#differences)
 
@@ -215,21 +215,33 @@ rather the computer do this for us.
     -- that is - we don't want to modify go source
 
   We support {call, execute, within} pointcut primitives right now:
+  Also we are hacking in local/global get/sets and declarations.
 
 __call__:
 
-    These happen before, after or wrap around calling a method. The code
-is outside of the function.
+    These happen before, after or wrap around calling a method. The code is outside of the function.
 
 __execute__:
 
-    These happen before or after executing a method. The code is put
-inside the method.
+    These happen before or after executing a method. The code is put inside the method.
 
 __within__:
 
-    These happen for *every* statement within a function body
-declaration.
+    These happen for *every* statement within a function body declaration.
+
+----------
+
+__get__:
+
+  These fire when a local/global variable has a get operation.
+
+__set__:
+
+  These fire when a local/global variable has a set operation.
+
+__declaration__:
+
+  This fires when a variable is declared.
 
 
   All pointcuts are currently defined only on functions. Struct field
@@ -285,80 +297,83 @@ sub-pkg && struct && method-name
 
 ### Advice:
 
-  Behavior to apply.
+Behavior to apply:
 
   * before
   * after
   * around
 
-  Around advice currently only works with call pointcuts.
+Around advice currently only works with call pointcuts.
 
-  We currently support the following advice:
+We currently support the following advice:
 
 #### call examples:
-    ```go
-      some.stuff()
-    ```
 
-    Code will be executed {before, around, after} this call.
+```go
+  some.stuff()
+```
 
-    __call before:__
-    ```go
-      fmt.Println("before")
-      some.stuff()
-    ```
+Code will be executed {before, around, after} this call.
 
-    __call after:__
-    ```go
-      some.stuff()
-      fmt.Println("before")
-    ```
+__call before:__
+```go
+  fmt.Println("before")
+  some.stuff()
+```
 
-    __call around:__
-    ```
-      somewrapper(some.stuff())
-    ```
+__call after:__
+```go
+  some.stuff()
+  fmt.Println("before")
+```
+
+__call around:__
+```
+  somewrapper(some.stuff())
+```
 
 #### execute examples:
-    ```go
-      func stuff() {
-        fmt.Println("stuff")
-      }
-    ```
 
-    __execute before:__
-    ```go
-      func stuff() {
-        fmt.Println("before")
-        fmt.Println("stuff")
-      }
-    ```
+```go
+  func stuff() {
+    fmt.Println("stuff")
+  }
+```
 
-    __execute after:__
-    ```go
-      func stuff() {
-        fmt.Println("stuff")
-        fmt.Println("after")
-      }
-    ```
+__execute before:__
+```go
+  func stuff() {
+    fmt.Println("before")
+    fmt.Println("stuff")
+  }
+```
+
+__execute after:__
+```go
+  func stuff() {
+    fmt.Println("stuff")
+    fmt.Println("after")
+  }
+```
 
 #### within examples:
-    ```go
-      func blah() {
-        slowCall()
-        fastCall()
-      }
-    ```
 
-    __within before:__
-    ```go
-      func blah() {
-        beforeEach()
-        slowCall()
-        beforeEach()
-        fastcall()
-      }
-    ```
+```go
+  func blah() {
+    slowCall()
+    fastCall()
+  }
+```
+
+__within before:__
+```go
+  func blah() {
+    beforeEach()
+    slowCall()
+    beforeEach()
+    fastcall()
+  }
+```
 
 ### Goals
 
@@ -445,12 +460,15 @@ that needs to be refactored
 ### Reserved Keywords
 
   Right now the only time you'll run into reserved keywords are in the
-experimental 'within' advice section although there is an intention to
+experimental 'within' and 'get'/'set' advice section although there is an intention to
 support a set of keywords that one can use in their aspects.
 
   * mName
     If you use 'mName' within your within advice it will translate to a
 string representation of the joinpoint found by your within pointcut.
+
+  * mAvars
+    this is a list of abstract variables used within get/set advice
 
   We'd appreciate help from the community formulating a more formal
 approach for this. Namespacing, the set of keywords supported, etc.
@@ -573,6 +591,8 @@ right now
 
   * sample aspects - aspects [should be shared on the loom](https://github.com/deferpanic/loom)
     - no need to re-invent the wheel
+
+  Need helping visualizing what you are looking at? Check out http://goast.yuroyoro.net/
 
 ### Roadmap
 
