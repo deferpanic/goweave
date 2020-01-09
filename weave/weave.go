@@ -1,6 +1,7 @@
 package weave
 
 import (
+	"go/types"
 	"io/ioutil"
 	"log"
 	"os"
@@ -11,9 +12,7 @@ import (
 	"go/parser"
 	"go/token"
 
-	_ "golang.org/x/tools/go/gcimporter"
 	"golang.org/x/tools/go/loader"
-	"golang.org/x/tools/go/types"
 )
 
 // Weave is struct runner for aspect transforms
